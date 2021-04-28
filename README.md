@@ -1,5 +1,7 @@
 # DeepEverest
 
+## A System for Efficient DNN Interpretation
+
 DNN interpretation is important for researchers and data scientists. While many new approaches are being developed, they often do not scale with the size of the datasets and models. The problem that we address in this paper is the efficient execution of a common class of DNN interpretation queries.
 
 We design, implement, and evaluate DeepEverest, a system for the efficient execution of interpretation by example queries over the activation values of a deep neural network. DeepEverest consists of an efficient indexing technique and a query execution algorithm with various optimizations. Experiments with our prototype implementation show that DeepEverest, using less than 20% of the storage of full materialization, significantly accelerates individual queries by up to 62x and consistently outperforms other methods on multi-query workloads that simulate DNN interpretation processes.
