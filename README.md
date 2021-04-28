@@ -1,6 +1,4 @@
-# DeepEverest
-
-## A System for Efficient DNN Interpretation
+# DeepEverest: A System for Efficient DNN Interpretation
 
 DNN interpretation is important for researchers and data scientists. While many new approaches are being developed, they often do not scale with the size of the datasets and models. The problem that we address in this paper is the efficient execution of a common class of DNN interpretation queries.
 
