@@ -24,7 +24,7 @@ You should be able to see a `build` folder in your current directory. One of the
 
 
 ### Construct the indexes (NPI and MAI)
-Go back to the root directory of DeepEverest.
+Go to the root directory of DeepEverest.
 
 `python 3`
 
@@ -34,7 +34,7 @@ import ctypes
 lib_file = <the path of the .so file that you just built>
 index_lib = ctypes.CDLL(lib_file)
 
-# Load the model and dataset that you want to interpret
+# Load the model and dataset that you want to interpret. Note that you can load your own model and dataset.
 from utils import load_mnist_vgg_dataset_model
 x_train, y_train, x_test, y_test, model = load_mnist_vgg_dataset_model()
 all_layer_names = [layer.name for layer in model.model.layers]
@@ -55,7 +55,7 @@ import math
 bits_per_image = math.ceil(math.log(n_partitions, 2))
 
 # Build the indexes
-from DeepEverest import *
+from DeepEverest import construct_index
 rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_low_bound, par_upp_bound = construct_index(
   index_lib=index_lib,
   n_images=n_images,
@@ -87,6 +87,8 @@ neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activatio
 
 # Query for the k-nearest neighbors in the dataset using the activations of this group of neurons
 # based on the proximity in the latent space defined by this group of neurons.
+# answer_query_with_guarantee() runs the Neural Threshold Algorithm.
+from DeepEverest import answer_query_with_guarantee  
 top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                                         model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
                                                         par_low_bound, par_upp_bound, image_sample_id,
