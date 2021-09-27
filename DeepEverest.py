@@ -1,22 +1,11 @@
 import ctypes
-import gc
 import heapq
-import math
-import os
-import random
-import statistics
-from datetime import date
-from timeit import default_timer as timer
 
 import numpy as np
-import tensorflow as tf
 
-from NeuronGroup import NeuronGroup
 from utils import l2_dist, get_group_activations_from_layer, binary_search, \
-    get_most_similar_input_based_on_neuron_group, warm_up_model, \
     get_layer_result_for_image_batch, get_partition_id_by_image_id, get_image_ids_by_partition_id, \
-    _get_double_pointers, load_imagenet_val_resnet_dataset_model, get_layer_result_by_layer_id, load_pickle, \
-    get_topk_activations_given_images, persist_index, evaluate, clear_cache
+    _get_double_pointers
 
 
 def construct_index(index_lib, n_images, ratio, n_partitions, bits_per_image, layer_result):
@@ -109,7 +98,7 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
     group_sample = get_group_sample(dataset, image_sample_id, layer_id, model, neuron_group)
 
     n_images = len(dataset)
-    n_images_rerun = 1
+    n_images_run = 1
     group_activation_cached = [None] * dataset.shape[0]
     group_activation_cached[image_sample_id] = group_sample
     heap = [(0.0, image_sample_id)]
@@ -127,7 +116,6 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
                                          pointer_list)
 
     print(f"image {image_sample_id}, size of neuron group {len(neuron_group.neuron_idx_list)}")
-    print("entering phase 1 ...")
 
     exit_msg = None
     image_batch = set()
@@ -154,14 +142,13 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
                 image_batch.add(image_idx)
 
         if len(image_batch) >= batch_size \
-                or n_images_rerun + len(image_batch) == dataset.shape[0] \
+                or n_images_run + len(image_batch) == dataset.shape[0] \
                 or round_cnt + 1 == n_images_in_partition_0:
             if len(image_batch) == 0:
                 break
             run_nn_and_update_things(dataset, group_activation_cached, group_sample, heap, image_batch, k, layer_id,
                                      model, neuron_group, BATCH_SIZE)
-            n_images_rerun += len(image_batch)
-            print(f"phase 1, round {round_cnt}: images in batch fed to NN: {len(image_batch)}")
+            n_images_run += len(image_batch)
             image_batch = set()
 
         if len(image_batch) == 0 and len(heap) == k:
@@ -175,25 +162,24 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
             round_activations = np.array(round_activations).reshape(group_sample.shape)
             threshold = l2_dist(round_activations, group_sample)
 
-            print(
-                f"phase 1, round {round_cnt}, threshold: {threshold}, max in answer: {-heap[0][0]}, images re-run: {n_images_rerun}")
+            print(f"threshold: {threshold}, max in answer: {-heap[0][0]}, images run: {n_images_run}")
             if heap[0] > (-threshold, n_images_in_partition_0):
-                print("======================= TA exited =======================")
-                exit_msg = f"termination: phase 1, round {round_cnt}; images re-run: {n_images_rerun}"
+                print("======================= NTA exited =======================")
+                exit_msg = f"termination: images run: {n_images_run}"
                 ta_exited = True
                 break
 
     if ta_exited:
-        return heap, exit_msg, is_sample_in_partition_0, n_images_rerun
+        return heap, exit_msg, is_sample_in_partition_0, n_images_run
 
     partitions_of_image = unpack_bits_and_get_image_partitions(idx_of_rev_idx, neuron_group, rev_bit_arr)
 
-    image_batch, n_images_rerun = deal_with_remaining_images_in_partition_0(dataset, group_activation_cached,
-                                                                            group_sample, heap, image_batch, k,
-                                                                            layer_id, model, n_images_rerun,
-                                                                            neuron_group, partitions_of_image,
-                                                                            pointer_list, bits_per_image, BATCH_SIZE,
-                                                                            where)
+    image_batch, n_images_run = deal_with_remaining_images_in_partition_0(dataset, group_activation_cached,
+                                                                          group_sample, heap, image_batch, k,
+                                                                          layer_id, model, n_images_run,
+                                                                          neuron_group, partitions_of_image,
+                                                                          pointer_list, bits_per_image, BATCH_SIZE,
+                                                                          where)
 
     bound_list, partition_pointer_list = initialize_bounds_and_pointers_for_phase_two(activations_with_idx_list,
                                                                                       image_sample_id, neuron_group,
@@ -213,7 +199,7 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
     for neuron_id in range(len(neuron_group.neuron_idx_list)):
         if pointer_list[neuron_id] is not None:
             boundary_partition_processed[neuron_id][0] = True
-    while n_images_rerun < dataset.shape[0]:
+    while n_images_run < dataset.shape[0]:
         images_for_neuron_list = list()
         for neuron_id, partition_of_image in enumerate(partitions_of_image):
             if round_cnt >= len(partition_access_order_list[neuron_id]):
@@ -228,7 +214,7 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
         if len(image_batch) > 0:
             run_nn_and_update_things(dataset, group_activation_cached, group_sample, heap, image_batch, k, layer_id,
                                      model, neuron_group, BATCH_SIZE)
-            n_images_rerun += len(image_batch)
+            n_images_run += len(image_batch)
             image_batch = set()
 
         for neuron_id in range(len(neuron_group.neuron_idx_list)):
@@ -264,21 +250,21 @@ def answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_ar
 
             threshold = l2_dist(round_activations, group_sample)
             print(
-                f"phase 2, round {round_cnt}, threshold: {threshold}, max in answer: {-heap[0][0]}, images re-run: {n_images_rerun}, row count: {row_cnt}")
+                f"threshold: {threshold}, max in answer: {-heap[0][0]}, images run: {n_images_run}")
 
             if heap[0] > (-threshold, n_images_in_partition_0):
-                print("======================= TA exited =======================")
+                print("======================= NTA exited =======================")
                 ta_exited = True
                 break
 
         round_cnt += 1
 
     if ta_exited:
-        exit_msg = f"termination: phase 2, round {round_cnt}; images re-run: {n_images_rerun}"
+        exit_msg = f"termination: images run: {n_images_run}"
     else:
-        exit_msg = f"termination: none; images re-run: {n_images_rerun}"
+        exit_msg = f"termination: none; images run: {n_images_run}"
 
-    return heap, exit_msg, is_sample_in_partition_0, n_images_rerun
+    return heap, exit_msg, is_sample_in_partition_0, n_images_run
 
 
 def get_group_sample(dataset, image_sample_id, layer_id, model, neuron_group):
@@ -342,7 +328,7 @@ def get_partition_access_order_list(group_sample, n_partitions, neuron_group, lo
 
 
 def deal_with_remaining_images_in_partition_0(dataset, group_activation_cached, group_sample, heap, image_batch, k,
-                                              layer_id, model, n_images_rerun, neuron_group, partitions_of_image,
+                                              layer_id, model, n_images_run, neuron_group, partitions_of_image,
                                               pointer_list, bits_per_image, BATCH_SIZE, where):
     n_images = len(dataset)
     for idx, partition_of_image in enumerate(partitions_of_image):
@@ -352,10 +338,10 @@ def deal_with_remaining_images_in_partition_0(dataset, group_activation_cached, 
     if len(image_batch) > 0:
         run_nn_and_update_things(dataset, group_activation_cached, group_sample, heap, image_batch, k, layer_id,
                                  model, neuron_group, BATCH_SIZE)
-        n_images_rerun += len(image_batch)
+        n_images_run += len(image_batch)
         print(f"partition 0: image batch into NN: {len(image_batch)}")
         image_batch = set()
-    return image_batch, n_images_rerun
+    return image_batch, n_images_run
 
 
 def get_bound_of_partitions(idx_of_rev_idx, neuron_group, bound):
@@ -421,391 +407,3 @@ def update_heap_from_cached_result(group_sample, heap, image_batch, k, cached_ne
             heapq.heappush(heap, (-dist, real_id))
         elif (-dist, real_id) > heap[0]:
             heapq.heapreplace(heap, (-dist, real_id))
-
-
-def benchmark(dataset):
-    global all_layer_names, bits_per_image, BATCH_SIZE
-
-    fwrite_benchmark_data(fout, batch_size, image_sample_ids, n_partitions_list, ratios)
-    fwrite_benchmark_data(fout_verbose, batch_size, image_sample_ids, n_partitions_list, ratios)
-
-    last_layer_id = -1
-    layer_result = None
-
-    for neuron_group_id, layer_name in enumerate(layer_names):
-        layer_id = all_layer_names.index(layer_name)
-        neuron_group_list = neuron_groups[neuron_group_id]
-        if layer_id != last_layer_id:
-            print(f"preparing layer_result for {layer_name} ...")
-            layer_result = None
-            gc.collect()
-            layer_result = get_layer_result_by_layer_id(model, dataset, layer_id, batch_size=batch_size)
-        else:
-            print(f"using layer_result from the previous set of experiments for {layer_name} ...")
-
-        answer_std = list()
-
-        print(
-            f"getting standard answers for {layer_name}, size of neuron group {len(neuron_group_list[0].neuron_idx_list)}")
-
-        time_brute_force_list = list()
-        for i, image_sample_id in enumerate(image_sample_ids):
-            start = timer()
-            top_k = get_most_similar_input_based_on_neuron_group(model, dataset, k_global, neuron_group_list[i],
-                                                                 l2_dist, image_sample_id, batch_size, layer_result)
-            end = timer()
-            answer_std.append(sorted(top_k))
-            time_brute_force = end - start
-            time_brute_force_list.append(time_brute_force)
-        print("store-everything (excl. load) query time median:", statistics.median(time_brute_force_list))
-
-        precision_list_list = list()
-        recall_list_list = list()
-        query_time_median_list_list = list()
-        query_time_min_list_list = list()
-        query_time_max_list_list = list()
-        query_times_list_list = list()
-        query_time_load_list_list = list()
-        exit_msgs_list_list = list()
-        prep_time_compute_list_list = list()
-        prep_time_dump_list_list = list()
-        storage_list_list = list()
-        is_in_partition_0_list_list_list = list()
-        n_images_rerun_median_list_list = list()
-
-        for n_partitions in n_partitions_list:
-
-            precision_list = list()
-            recall_list = list()
-            query_time_median_list = list()
-            query_time_min_list = list()
-            query_time_max_list = list()
-            query_times_list = list()
-            query_time_load_list = list()
-            exit_msgs_list = list()
-            prep_time_compute_list = list()
-            prep_time_dump_list = list()
-            storage_list = list()
-            is_in_partition_0_list_list = list()
-            n_images_rerun_median_list = list()
-
-            bits_per_image = math.ceil(math.log(n_partitions, 2))
-
-            for ratio in ratios:
-                print(f"n_partitions={n_partitions}, ratio={ratio}, start pre-processing ...")
-
-                par_low_bound, par_upp_bound, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx = preprocess(layer_name,
-                                                                                                          n_partitions,
-                                                                                                          ratio,
-                                                                                                          bits_per_image,
-                                                                                                          layer_result,
-                                                                                                          prep_time_compute_list,
-                                                                                                          prep_time_dump_list,
-                                                                                                          query_time_load_list,
-                                                                                                          storage_list)
-                # execution
-                answer = list()
-                exit_msgs = list()
-                query_times = list()
-                is_in_partition_0_list = list()
-                n_images_rerun_list = list()
-                for i, image_sample_id in enumerate(image_sample_ids):
-                    start = timer()
-                    top_k, exit_msg, is_in_partition_0, n_images_rerun = \
-                        answer_query_with_guarantee(model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
-                                                    par_low_bound, par_upp_bound, image_sample_id,
-                                                    neuron_group_list[i], k_global, n_partitions, bits_per_image,
-                                                    BATCH_SIZE=BATCH_SIZE, batch_size=batch_size)
-                    end = timer()
-                    query_time = end - start
-                    top_k = sorted(top_k)
-
-                    is_in_partition_0_list.append(is_in_partition_0)
-                    query_times.append(query_time)
-                    answer.append(top_k)
-                    exit_msgs.append(exit_msg)
-                    n_images_rerun_list.append(n_images_rerun)
-                    print(f"==== image {image_sample_id}, query time: {query_time}, msg: {exit_msg} ====")
-
-                # evaluation
-                evaluate_then_collect(answer, answer_std, exit_msgs, exit_msgs_list, image_sample_ids,
-                                      is_in_partition_0_list, is_in_partition_0_list_list, precision_list,
-                                      query_time_max_list, query_time_median_list, query_time_min_list, query_times,
-                                      query_times_list, recall_list, n_images_rerun_median_list,
-                                      n_images_rerun_list)
-
-                print(
-                    f"{layer_name}, n_partitions={n_partitions}, ratio={ratio}, precision: {precision_list[-1]}, query time median: {statistics.median(query_times)}")
-
-            precision_list_list.append(precision_list)
-            recall_list_list.append(recall_list)
-            query_time_median_list_list.append(query_time_median_list)
-            query_time_min_list_list.append(query_time_min_list)
-            query_time_max_list_list.append(query_time_max_list)
-            query_times_list_list.append(query_times_list)
-            query_time_load_list_list.append(query_time_load_list)
-            exit_msgs_list_list.append(exit_msgs_list)
-            prep_time_compute_list_list.append(prep_time_compute_list)
-            prep_time_dump_list_list.append(prep_time_dump_list)
-            storage_list_list.append(storage_list)
-            is_in_partition_0_list_list_list.append(is_in_partition_0_list_list)
-            n_images_rerun_median_list_list.append(n_images_rerun_median_list)
-
-            print_verbose(n_partitions,
-                          exit_msgs_list, image_sample_ids, is_in_partition_0_list_list, layer_name, neuron_group_list,
-                          precision_list, prep_time_compute_list, prep_time_dump_list, query_time_load_list,
-                          query_time_max_list, query_time_median_list, query_time_min_list, query_times_list,
-                          recall_list, storage_list, n_images_rerun_median_list)
-
-        fwrite_non_verbose(fout, exit_msgs_list_list, image_sample_ids, is_in_partition_0_list_list_list, layer_name,
-                           neuron_group_list, precision_list_list, prep_time_compute_list_list,
-                           prep_time_dump_list_list, query_time_load_list_list, query_time_max_list_list,
-                           query_time_median_list_list, query_time_min_list_list, query_times_list_list,
-                           recall_list_list, storage_list_list, n_images_rerun_median_list_list)
-
-        fwrite_verbose(fout_verbose, exit_msgs_list_list, image_sample_ids, is_in_partition_0_list_list_list,
-                       layer_name, neuron_group_list, precision_list_list, prep_time_compute_list_list,
-                       prep_time_dump_list_list, query_time_load_list_list, query_time_max_list_list,
-                       query_time_median_list_list, query_time_min_list_list, query_times_list_list,
-                       recall_list_list, storage_list_list, n_images_rerun_median_list_list)
-
-        last_layer_id = layer_id
-
-
-def evaluate_then_collect(answer, answer_std, exit_msgs, exit_msgs_list, image_sample_ids, is_in_partition_0_list,
-                          is_in_partition_0_list_list, precision_list, query_time_max_list, query_time_median_list,
-                          query_time_min_list, query_times, query_times_list, recall_list,
-                          n_images_rerun_median_list, n_images_rerun_list):
-    sum_precision = 0.0
-    sum_recall = 0.0
-    for i in range(len(image_sample_ids)):
-        precision, recall = evaluate(answer_std[i], answer[i])
-        sum_precision += precision
-        sum_recall += recall
-        print(image_sample_ids[i], precision, recall)
-        if precision < 1.0:
-            print(str(answer_std[i]))
-            print(str(answer[i]))
-    precision_list.append(sum_precision / len(image_sample_ids))
-    recall_list.append(sum_recall / len(image_sample_ids))
-    query_time_median_list.append(statistics.median(query_times))
-    query_time_min_list.append(min(query_times))
-    query_time_max_list.append(max(query_times))
-    query_times_list.append(query_times)
-    exit_msgs_list.append(exit_msgs)
-    is_in_partition_0_list_list.append(is_in_partition_0_list)
-    n_images_rerun_median_list.append(statistics.median(n_images_rerun_list))
-
-
-def preprocess(layer_name, n_partitions, ratio, bits_per_image, layer_result, prep_time_compute_list,
-               prep_time_dump_list, query_time_load_list, storage_list):
-    if LOAD_INDEX:
-        try:
-            storage_size = 0.0
-            filename_rev_idx = list()
-            for i in range(6):
-                if i <= 4:
-                    filename = f"/data/{imagenet}_{layer_name}_{n_partitions}_{ratio}_indices_{i}.npy"
-                else:
-                    filename = f"/data/{imagenet}_{layer_name}_{n_partitions}_{ratio}_indices_{i}.pickle"
-                storage_size += os.stat(filename).st_size / 1024 / 1024
-                filename_rev_idx.append(filename)
-            par_low_bound, par_upp_bound, query_time_load, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx = load_all_indices(
-                filename_rev_idx)
-            prep_time_compute = None
-            prep_time_dump = None
-        except FileNotFoundError:
-            par_low_bound, par_upp_bound, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx, \
-            prep_time_compute, prep_time_dump, query_time_load, storage_size = compute_persist_and_load_index(
-                layer_name, n_partitions, ratio, bits_per_image, layer_result)
-    else:
-        par_low_bound, par_upp_bound, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx, \
-        prep_time_compute, prep_time_dump, query_time_load, storage_size = compute_persist_and_load_index(
-            layer_name, n_partitions, ratio, bits_per_image, layer_result)
-    preprocessing_collect(prep_time_compute, prep_time_compute_list,
-                          prep_time_dump, prep_time_dump_list,
-                          query_time_load, query_time_load_list,
-                          storage_size, storage_list)
-    return par_low_bound, par_upp_bound, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx
-
-
-def load_all_indices(filename_rev_idx):
-    clear_cache()
-    start = timer()
-    rev_act = np.load(filename_rev_idx[0])
-    rev_idx_act = np.load(filename_rev_idx[1])
-    rev_bit_arr = np.load(filename_rev_idx[2])
-    par_low_bound = np.load(filename_rev_idx[3])
-    par_upp_bound = np.load(filename_rev_idx[4])
-    rev_idx_idx = load_pickle(filename_rev_idx[5])
-    end = timer()
-    query_time_load = end - start
-    return par_low_bound, par_upp_bound, query_time_load, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx
-
-
-def preprocessing_collect(prep_time_compute, prep_time_compute_list, prep_time_dump, prep_time_dump_list,
-                          query_time_load, query_time_load_list, storage_size, storage_list):
-    prep_time_compute_list.append(prep_time_compute)
-    print("pre-processing compute time:", prep_time_compute)
-    prep_time_dump_list.append(prep_time_dump)
-    print("pre-processing dump time:", prep_time_dump)
-    storage_list.append(storage_size)
-    print("storage (MB):", storage_size)
-    query_time_load_list.append(query_time_load)
-    print("query_time load:", query_time_load)
-
-
-def compute_persist_and_load_index(layer_name, n_partitions, ratio, bits_per_image, layer_result):
-    start = timer()
-    rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_low_bound, par_upp_bound = construct_index(
-        index_lib=index_lib,
-        n_images=n_images,
-        ratio=ratio,
-        n_partitions=n_partitions,
-        bits_per_image=bits_per_image,
-        layer_result=layer_result)
-    end = timer()
-    prep_time_compute = end - start
-    print("pre-processing compute done ...")
-    prep_time_dump, query_time_load, storage_size = persist_index(imagenet, layer_name, n_partitions, ratio,
-                                                                  par_low_bound, par_upp_bound, rev_act,
-                                                                  rev_bit_arr, rev_idx_act, rev_idx_idx)
-
-    return par_low_bound, par_upp_bound, rev_act, rev_bit_arr, rev_idx_act, rev_idx_idx, prep_time_compute, \
-           prep_time_dump, query_time_load, storage_size
-
-
-def fwrite_benchmark_data(f, batch_size, image_sample_ids, n_partitions_list, ratios):
-    print(f"n_partitions: {n_partitions_list}", file=f)
-    print(f"ratios: {ratios}", file=f)
-    print(f"TA batch_size: {batch_size}", file=f)
-    print(f"random images: {image_sample_ids}", file=f)
-    print("", file=f)
-    print("", file=f)
-
-
-def print_verbose(n_partitions, exit_msgs_list, image_sample_ids, is_in_partition_0_list_list, layer_name,
-                  neuron_group_list, precision_list, prep_time_compute_list, prep_time_dump_list, query_time_load_list,
-                  query_time_max_list, query_time_median_list, query_time_min_list, query_times_list, recall_list,
-                  storage_list, n_images_rerun_median_list):
-    print("")
-    print(f"Result for {layer_name}, n_partitions {n_partitions}")
-    for i, neuron_group in enumerate(neuron_group_list):
-        print(image_sample_ids[i], neuron_group.neuron_idx_list)
-    print("----------------------------------------------")
-    print(precision_list)
-    print(query_time_median_list)
-    print(n_images_rerun_median_list)
-    print("----------------------------------------------")
-    print("")
-    print("")
-
-
-def fwrite_non_verbose(f, exit_msgs_list_list, image_sample_ids, is_in_partition_0_list_list_list, layer_name,
-                       neuron_group_list, precision_list_list, prep_time_compute_list_list, prep_time_dump_list_list,
-                       query_time_load_list_list, query_time_max_list_list, query_time_median_list_list,
-                       query_time_min_list_list, query_times_list_list, recall_list_list, storage_list_list,
-                       n_images_rerun_median_list_list):
-    print(f"Result for {layer_name}, neuron group size {len(neuron_group_list[0].neuron_idx_list)}", file=f)
-    print(f"precision: {precision_list_list}", file=f)
-    print(f"query_time_median excl. load (s): {query_time_median_list_list}", file=f)
-    print(f"n_images_rerun_median: {n_images_rerun_median_list_list}", file=f)
-    print("", file=f)
-    print(f"query_times (s): {query_times_list_list}", file=f)
-    print(f"query_time load (s): {query_time_load_list_list}", file=f)
-    print(f"storage for one layer (MB): {storage_list_list}", file=f)
-    print("", file=f)
-    print("", file=f)
-
-
-def fwrite_verbose(f, exit_msgs_list_list, image_sample_ids, is_in_partition_0_list_list_list, layer_name,
-                   neuron_group_list, precision_list_list, prep_time_compute_list_list, prep_time_dump_list_list,
-                   query_time_load_list_list, query_time_max_list_list, query_time_median_list_list,
-                   query_time_min_list_list, query_times_list_list, recall_list_list, storage_list_list,
-                   n_images_rerun_median_list_list):
-    print(f"Result for {layer_name}", file=f)
-    for i, neuron_group in enumerate(neuron_group_list):
-        print(f"image_id: {image_sample_ids[i]}, neuron group: {neuron_group.neuron_idx_list}", file=f)
-    print("", file=f)
-    print(f"precision: {precision_list_list}", file=f)
-    print(f"recall: {recall_list_list}", file=f)
-    print(f"query_time_median excl. load (s): {query_time_median_list_list}", file=f)
-    print(f"n_images_rerun_median: {n_images_rerun_median_list_list}", file=f)
-    print(f"query_time_min excl. load (s): {query_time_min_list_list}", file=f)
-    print(f"query_time_max excl. load (s): {query_time_max_list_list}", file=f)
-    print(f"query_time load (s): {query_time_load_list_list}", file=f)
-    print(f"prep_time_compute (for one layer): {prep_time_compute_list_list}", file=f)
-    print(f"prep_time_dump (for one layer): {prep_time_dump_list_list}", file=f)
-    print(f"storage for one layer (MB): {storage_list_list}", file=f)
-    print(f"exit_msg: {exit_msgs_list_list}", file=f)
-    print(f"is_image_sample_in_partition_0: {is_in_partition_0_list_list_list}", file=f)
-    print(f"query_times (s): {query_times_list_list}", file=f)
-    print("", file=f)
-    print("", file=f)
-
-
-def imagenet_prepare_experiments_top_activation_neuron_group(model, dataset, all_layer_names):
-    image_sample_ids = random.choices(range(len(dataset)), k=5)
-    layer_names = ["activation_2", "activation_2", "activation_2",
-                   "activation_25", "activation_25", "activation_25",
-                   "activation_48", "activation_48", "activation_48"]
-    neuron_group_sizes = [1, 3, 10, 1, 3, 10, 1, 3, 10]
-    neuron_groups = get_top_neuron_group_for_images(model, dataset, layer_names, neuron_group_sizes, image_sample_ids,
-                                                    all_layer_names)
-    k_global = 20
-    ratios = [0.0, 0.1, 0.2, 0.3, 0.4]
-    n_partitions_list = [2, 4, 8, 16, 32, 64, 128, 256]
-    batch_size = 64
-    return batch_size, image_sample_ids, k_global, layer_names, n_partitions_list, neuron_groups, ratios
-
-
-def get_top_neuron_group_for_images(model, dataset, layer_names, neuron_group_sizes, image_sample_ids, all_layer_names):
-    neuron_groups = list()
-    for i, layer_name in enumerate(layer_names):
-        top_activations = get_topk_activations_given_images(model, dataset, image_sample_ids, layer_name,
-                                                            neuron_group_sizes[i])
-        neuron_group_list = list()
-        for j in range(len(image_sample_ids)):
-            neuron_group_list.append(NeuronGroup(model=model.model, layer_id=all_layer_names.index(layer_name),
-                                                 neuron_idx_list=[x[1] for x in top_activations[j]]))
-        neuron_groups.append(neuron_group_list)
-    return neuron_groups
-
-
-if __name__ == '__main__':
-    assert tf.test.is_gpu_available()
-    assert tf.test.is_built_with_cuda()
-    os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
-    random.seed(1001)
-    lib_file = "./index/build/lib.linux-x86_64-3.6/deepeverst_index.cpython-36m-x86_64-linux-gnu.so"
-    index_lib = ctypes.CDLL(lib_file)
-
-    imagenet = "imagenet"
-    group = "top"
-    dataset, model, dataset_loading_time = load_imagenet_val_resnet_dataset_model()
-    BATCH_SIZE = 64
-    all_layer_names = [layer.name for layer in model.model.layers]
-    batch_size, image_sample_ids, k_global, layer_names, n_partitions_list, neuron_groups, ratios = \
-        imagenet_prepare_experiments_top_activation_neuron_group(model, dataset, all_layer_names)
-
-    n_images = len(dataset)
-    LOAD_INDEX = False
-
-    warm_up_model(model, dataset)
-    print(model.model.summary())
-    print("image dataset loading time:", dataset_loading_time)
-
-    today = date.today()
-    date_str = today.strftime("%m%d")
-
-    output = f"{date_str}_{imagenet}_{group}_group_{batch_size}_benchmark.txt"
-    output_verbose = f"{date_str}_{imagenet}_{group}_group_{batch_size}_benchmark_verbose.txt"
-    fout = open(output, "w")
-    fout_verbose = open(output_verbose, "w")
-
-    print(imagenet, group, file=fout_verbose)
-    print("image dataset loading time:", dataset_loading_time, file=fout_verbose)
-
-    benchmark(dataset)
-
-    fout.close()

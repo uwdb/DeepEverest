@@ -6,11 +6,11 @@ import shlex
 import subprocess
 from timeit import default_timer as timer
 
-import keras
+from tensorflow import keras
 import matplotlib.pyplot as plt
 import numpy as np
-from keras.datasets import cifar10, mnist
-from keras.utils import np_utils
+from tensorflow.keras.datasets import cifar10, mnist
+from tensorflow.keras import utils
 
 from models.Cifar10VGG import Cifar10VGG
 from models.ImagenetResNet import ImagenetResNet50
@@ -208,8 +208,8 @@ def load_mnist_vgg_dataset_model():
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     x_train = x_train.reshape(-1, 28, 28, 1)
     x_test = x_test.reshape(-1, 28, 28, 1)
-    y_train = np_utils.to_categorical(y_train)
-    y_test = np_utils.to_categorical(y_test)
+    y_train = utils.to_categorical(y_train)
+    y_test = utils.to_categorical(y_test)
 
     model = MnistVGG(train=False)
     return x_train, y_train, x_test, y_test, model
