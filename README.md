@@ -62,5 +62,22 @@ rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_low_bound, par_upp_bound = c
 
 You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()`, or to interpret your DNN and dataset directly.
 
+```
+# Set the target input of interest and the number of top activations you want to inspect
+image_ids = [659]
+k = 20
+
+# Get the top-k activations for this input in this layer and their corresponding neuron ids
+from utils import get_topk_activations_given_images
+topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, k_global)[0]
+topk_activations_neurons = [x[1] for x in topk_activations]
+
+# Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons
+from NeuronGroup import *
+image_sample_id = 659
+neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activations_neurons[:3])
+
+```
+
 # Running the example notebook
 You can run `example.ipynb` to walk through the functionality that DeepEverest provides.
