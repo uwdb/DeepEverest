@@ -1,9 +1,9 @@
 # DeepEverest: A System for Efficient DNN Interpretation
 
-A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. The paper will appear in PVLDB Vol. 15 (coming soon!), and the preprint version of the paper is available at https://arxiv.org/abs/2104.02234.
+A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. A paper for this project will appear in PVLDB Vol. 15 (coming soon!), and the preprint version of the paper is available at https://arxiv.org/abs/2104.02234.
 
 ## Repository Overview
-Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models`. However, you can apply DeepEverest on your own model and dataset.
+Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the source code for the construction of the indexes used in the DeepEverest. `tools` contains useful interpretation techniques adapted from other projects.
 
 ## Cloning
 `git clone https://github.com/uwdb/DeepEverest.git` <br>
@@ -99,4 +99,4 @@ top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
-You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples` also contains a few more examples for an old version of DeepEverest with some other interpretation techniques adapted from other projects (e.g., pixel-level attribution).
+You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution).
