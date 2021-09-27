@@ -20,7 +20,7 @@ The prototype is tested with Python 3.7. You can enter your virtual environment 
 `cd index` <br>
 `python setup_deepeverest_index.py build`
 
-You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python version) inside `build` will contain the built library. It is a `.so` file. The filename is also dependent on the system and python versions.
+You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python version) inside `build` will contain the built library. It is a `.so` file. The filename is also dependent on the system and python versions. For example, the relative path could look like `index/build/lib.macosx-10.7-x86_64-3.7/deepeverst_index.cpython-37m-darwin.so`.
 
 
 ### Construct the indexes (NPI and MAI)
