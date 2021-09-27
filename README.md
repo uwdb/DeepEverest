@@ -8,4 +8,11 @@ Prototype implementation of DeepEverest, which is a system that supports efficie
 
 # Install required packages
 The prototype is tested with Python 3.7. You can enter your virtual environment before this step.
+
 `pip install -r requirements.txt`
+
+# Example usage
+
+
+# Running the example notebook
+You can run `example.ipynb` to walk through the functionality that DeepEverest provides.
