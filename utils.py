@@ -369,14 +369,14 @@ def get_layer_results_by_layer_names(model, x, layer_names, batch_size=None):
     return res
 
 
-def get_most_similar_input_based_on_neuron_group(model, dataset, k, neuron_group, dist_func, input_sample_id,
+def get_most_similar_input_based_on_neuron_group(model, dataset, k, neuron_group, dist_func, image_sample_id,
                                                  batch_size, layer_result_dataset=None):
     if batch_size is None:
         batch_size = 2000
     if layer_result_dataset is None:
-        layer_sample = model.get_layer_result_by_layer_id([dataset[input_sample_id]], neuron_group.layer_id)[0]
+        layer_sample = model.get_layer_result_by_layer_id([dataset[image_sample_id]], neuron_group.layer_id)[0]
     else:
-        layer_sample = layer_result_dataset[input_sample_id]
+        layer_sample = layer_result_dataset[image_sample_id]
     heap = []
     cur_input_id = []
     for i in range(dataset.shape[0]):
@@ -389,7 +389,7 @@ def get_most_similar_input_based_on_neuron_group(model, dataset, k, neuron_group
     return heap
 
 
-def get_topk_inputs_producing_highest_activation_based_on_neuron_group(model, dataset, k, neuron_group, norm,
+def get_topk_images_producing_highest_activation_based_on_neuron_group(model, dataset, k, neuron_group, norm,
                                                                        batch_size, layer_result_dataset=None):
     if batch_size is None:
         batch_size = 2000
@@ -403,15 +403,15 @@ def get_topk_inputs_producing_highest_activation_based_on_neuron_group(model, da
     return heap
 
 
-def get_topk_activations_given_inputs(model, dataset, input_ids, layer_name, k):
+def get_topk_activations_given_images(model, dataset, image_ids, layer_name, k):
     res = list()
-    input_samples = list()
-    for input_sample_id in input_ids:
-        input_samples.append(dataset[input_sample_id])
-    layer_result_input_samples = get_layer_result_by_layer_name(model, input_samples, layer_name)
-    for idx, input_sample_id in enumerate(input_ids):
+    image_samples = list()
+    for image_sample_id in image_ids:
+        image_samples.append(dataset[image_sample_id])
+    layer_result_image_samples = get_layer_result_by_layer_name(model, image_samples, layer_name)
+    for idx, image_sample_id in enumerate(image_ids):
         heap = list()
-        for neuron_idx, activation in np.ndenumerate(layer_result_input_samples[idx]):
+        for neuron_idx, activation in np.ndenumerate(layer_result_image_samples[idx]):
             if len(heap) < k:
                 heapq.heappush(heap, (activation, neuron_idx))
             elif (activation, neuron_idx) > heap[0]:
@@ -420,15 +420,15 @@ def get_topk_activations_given_inputs(model, dataset, input_ids, layer_name, k):
     return res
 
 
-def get_rev_sorted_activations_given_inputs(model, dataset, input_ids, layer_name, nonzero, eps=5e-2):
+def get_rev_sorted_activations_given_images(model, dataset, image_ids, layer_name, nonzero, eps=5e-2):
     res = list()
-    input_samples = list()
-    for input_sample_id in input_ids:
-        input_samples.append(dataset[input_sample_id])
-    layer_result_input_samples = get_layer_result_by_layer_name(model, input_samples, layer_name)
-    for idx, input_sample_id in enumerate(input_ids):
+    image_samples = list()
+    for image_sample_id in image_ids:
+        image_samples.append(dataset[image_sample_id])
+    layer_result_image_samples = get_layer_result_by_layer_name(model, image_samples, layer_name)
+    for idx, image_sample_id in enumerate(image_ids):
         act_neurons = list()
-        for neuron_idx, activation in np.ndenumerate(layer_result_input_samples[idx]):
+        for neuron_idx, activation in np.ndenumerate(layer_result_image_samples[idx]):
             if nonzero:
                 if abs(activation) > eps:
                     act_neurons.append((activation, neuron_idx))
@@ -442,29 +442,29 @@ def warm_up_model(model, dataset):
     model.predict([dataset[0]])
 
 
-def get_layer_result_for_input_batch(model, dataset, input_batch, layer_id, batch_size):
+def get_layer_result_for_image_batch(model, dataset, image_batch, layer_id, batch_size):
     cur_input = []
-    for input_id in input_batch:
+    for input_id in image_batch:
         cur_input.append(dataset[input_id])
     layer_result = get_layer_result_by_layer_id(model, cur_input, layer_id, batch_size)
     return layer_result
 
 
-def get_partition_id_by_input_id(bit_array, input_id, bits_per_input):
-    start_bit = input_id * bits_per_input
-    end_bit = start_bit + bits_per_input
+def get_partition_id_by_image_id(bit_array, image_id, bits_per_image):
+    start_bit = image_id * bits_per_image
+    end_bit = start_bit + bits_per_image
     res = 0
     for bit in bit_array[start_bit:end_bit]:
         res = (res << 1) | bit
     return res
 
 
-def get_input_ids_by_partition_id(bit_array, partition_id, bits_per_input, n_inputs):
-    inputs = set()
-    partition_bits = get_bits(partition_id, bits_per_input)
-    for input_id in range(n_inputs):
-        start_bit = input_id * bits_per_input
-        end_bit = start_bit + bits_per_input
+def get_image_ids_by_partition_id(bit_array, partition_id, bits_per_image, n_images):
+    images = set()
+    partition_bits = get_bits(partition_id, bits_per_image)
+    for image_id in range(n_images):
+        start_bit = image_id * bits_per_image
+        end_bit = start_bit + bits_per_image
 
         same = True
         for i, pos in enumerate(range(start_bit, end_bit)):
@@ -472,9 +472,9 @@ def get_input_ids_by_partition_id(bit_array, partition_id, bits_per_input, n_inp
                 same = False
                 break
         if same:
-            inputs.add(input_id)
+            images.add(image_id)
 
-    return inputs
+    return images
 
 
 def _get_double_pointers(x):
@@ -517,13 +517,14 @@ def prepare_layers_result_dataset(model, dataset, layer_names, all_layer_names, 
     return layers_result_dataset
 
 
-def persist_index(dataset_name, layer_name, n_partitions, ratio, par_low_bound, rev_act, rev_bit_arr, rev_idx_act,
-                  rev_idx_idx):
+def persist_index(dataset_name, layer_name, n_partitions, ratio, par_low_bound, par_upp_bound, rev_act, rev_bit_arr,
+                  rev_idx_act, rev_idx_idx):
+    clear_cache()
     prep_time_dump = 0
     storage_size = 0.0
     query_time_load = 0
-    for i, obj in enumerate([rev_act, rev_idx_act, rev_bit_arr, par_low_bound, rev_idx_idx]):
-        if i <= 3:
+    for i, obj in enumerate([rev_act, rev_idx_act, rev_bit_arr, par_low_bound, par_upp_bound, rev_idx_idx]):
+        if i <= 4:
             start = timer()
             filename = f"/data/{dataset_name}_{layer_name}_{n_partitions}_{ratio}_reverse_indices_{i}.npy"
             np.save(filename, obj)
@@ -553,12 +554,12 @@ def persist_index(dataset_name, layer_name, n_partitions, ratio, par_low_bound, 
 def evaluate(std, answer, eps=1e-4):
     std = sorted(std)
     answer = sorted(answer)
-    std_input = [x[1] for x in std]
-    answer_input = [x[1] for x in answer]
+    std_image = [x[1] for x in std]
+    answer_image = [x[1] for x in answer]
 
     tp = 0
     for i in range(len(answer)):
-        if answer_input[i] in std_input or (i < len(std) and abs((answer[i][0] - std[i][0]) / std[i][0]) <= eps):
+        if answer_image[i] in std_image or (i < len(std) and abs((answer[i][0] - std[i][0]) / std[i][0]) <= eps):
             tp += 1
     if len(answer) == 0:
         return 0.0, 0.0
