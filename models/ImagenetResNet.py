@@ -1,5 +1,5 @@
-from keras import optimizers
-from keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.keras import optimizers
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
 
 from models.BaseModel import BaseModel
 

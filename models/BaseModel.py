@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 
 class BaseModel(object):
@@ -49,14 +49,8 @@ class BaseModel(object):
             x = np.asarray(x)
         if normalize:
             x = self.preprocess_input_for_inference(x)
-        # start = timer()
         get_layer_output = self.get_layer_outputs[layer_id]
-        # end = timer()
-        # print("Construct function:", end - start)
-        # start = timer()
         res = get_layer_output(x)[0]
-        # end = timer()
-        # print(f"DNN inference on {len(x)} inputs:", end - start)
         return res
 
     def get_layer_result_by_layer_name(self, x, layer_name, normalize=True):

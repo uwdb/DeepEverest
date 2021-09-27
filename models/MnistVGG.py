@@ -1,8 +1,8 @@
 import numpy as np
-from keras import optimizers
-from keras.layers import (Input, Conv2D, BatchNormalization, ZeroPadding2D,
+from tensorflow.keras import optimizers
+from tensorflow.keras.layers import (Input, Conv2D, BatchNormalization, ZeroPadding2D,
                           MaxPooling2D, Activation, Dense, Dropout, Flatten)
-from keras.models import Model
+from tensorflow.keras.models import Model
 
 from models.BaseModel import BaseModel
 

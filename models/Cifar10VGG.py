@@ -1,9 +1,9 @@
 import numpy as np
-from keras import optimizers
-from keras import regularizers
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.models import Sequential
+from tensorflow.keras import optimizers
+from tensorflow.keras import regularizers
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
+from tensorflow.keras.models import Sequential
 
 from models.BaseModel import BaseModel
 
