@@ -39,6 +39,7 @@ all_layer_names = [layer.name for layer in model.model.layers]
 dataset = x_test
 
 # Set the layer of interest and get its activations
+from utils import get_layer_result_by_layer_id
 layer_name = "activation_12"
 layer_id = all_layer_names.index(layer_name)
 batch_size = 64
