@@ -4,6 +4,7 @@ Prototype implementation of DeepEverest, which is a system that supports efficie
 
 # Cloning
 `git clone https://github.com/uwdb/DeepEverest.git`
+
 `cd DeepEverest`
 
 # Install required packages
@@ -15,6 +16,7 @@ The prototype is tested with Python 3.7. You can enter your virtual environment 
 
 ## Build the dynamically linked libraries for index construction in DeepEverest.
 `cd index`
+
 `python setup_deepeverest_index.py build`
 
 You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python version) inside `build` will contain the built libraries. It is a `.so` file. The filename is also dependent on the system and python versions.
