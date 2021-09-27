@@ -99,4 +99,4 @@ top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
-You can run `example.ipynb` to walk through the functionality that DeepEverest provides.
+You can run `example.ipynb` to walk through the functionality that DeepEverest provides.` `old-examples` also contains a few more examples for an old version of DeepEverest with some other interpretation techniques adapted from other projects (e.g., pixel-level attribution).
