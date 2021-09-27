@@ -16,14 +16,14 @@ The prototype is tested with Python 3.7. You can enter your virtual environment 
 
 ## Example usage
 
-### Build the dynamically linked library for index construction in DeepEverest
+### Build the dynamically linked library for the construction of the Neural Partition Index (NPI) and Maximum Activation Index (MAI) in DeepEverest
 `cd index` <br>
 `python setup_deepeverest_index.py build`
 
 You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python version) inside `build` will contain the built library. It is a `.so` file. The filename is also dependent on the system and python versions.
 
 
-### Construct the indexes
+### Construct the indexes (NPI and MAI)
 Go back to the root directory of DeepEverest.
 
 `python 3`
@@ -68,7 +68,7 @@ rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_low_bound, par_upp_bound = c
 
 You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()`, or to interpret your DNN and dataset directly.
 
-### Interpret the functionality of any group of neurons
+### Interpret the functionality of any group of neurons using DeepEverest's Neural Threshold Algorithm (NTA)
 
 ```
 # Set the target input of interest and the number of top activations you want to inspect
