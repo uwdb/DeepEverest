@@ -91,7 +91,7 @@ top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
 top_k = sorted(top_k)
 ```
 
-The top-k results in `top_k`. Inspect them to investigate and understand what this group of neurons' functionality by tying that functionality to the input examples in the dataset.
+The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
 You can run `example.ipynb` to walk through the functionality that DeepEverest provides.
