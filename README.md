@@ -1,6 +1,6 @@
 # DeepEverest: A System for Efficient DNN Interpretation
 
-A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. A paper for this project will appear in PVLDB Vol. 15 (coming soon!), and the preprint version of the paper is available at https://arxiv.org/abs/2104.02234.
+A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. See project page https://db.cs.washington.edu/projects/deepeverest/. A paper for this project will appear in PVLDB Vol. 15 (coming soon!), and the preprint version of the paper is available at https://arxiv.org/abs/2104.02234. 
 
 ## Repository Overview
 Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
