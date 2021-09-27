@@ -505,50 +505,24 @@ def clear_cache():
 def prepare_layers_result_dataset(model, dataset, layer_names, all_layer_names, BATCH_SIZE):
     print("Preparing layers_result_dataset ...")
     layers_result_dataset = dict()
-    start = timer()
     for i in range(len(layer_names)):
         layer_id = all_layer_names.index(layer_names[i])
         if layer_id not in layers_result_dataset:
             layers_result_dataset[layer_id] = get_layer_result_by_layer_name(model, dataset, layer_names[i],
                                                                              batch_size=BATCH_SIZE)
-    end = timer()
-    time_for_inference = end - start
-    print("Inference time for experimental layers:", time_for_inference)
     return layers_result_dataset
 
 
 def persist_index(dataset_name, layer_name, n_partitions, ratio, par_low_bound, par_upp_bound, rev_act, rev_bit_arr,
                   rev_idx_act, rev_idx_idx):
     clear_cache()
-    prep_time_dump = 0
-    storage_size = 0.0
-    query_time_load = 0
     for i, obj in enumerate([rev_act, rev_idx_act, rev_bit_arr, par_low_bound, par_upp_bound, rev_idx_idx]):
         if i <= 4:
-            start = timer()
-            filename = f"/data/{dataset_name}_{layer_name}_{n_partitions}_{ratio}_reverse_indices_{i}.npy"
+            filename = f"./index/{dataset_name}_{layer_name}_{n_partitions}_{ratio}_reverse_indices_{i}.npy"
             np.save(filename, obj)
-            end = timer()
-            prep_time_dump += end - start
-            clear_cache()
-            start = timer()
-            obj_laod = np.load(filename)
-            end = timer()
-            query_time_load += end - start
         else:
-            start = timer()
-            filename = f"/data/{dataset_name}_{layer_name}_{n_partitions}_{ratio}_reverse_indices_{i}.pickle"
+            filename = f"./index/{dataset_name}_{layer_name}_{n_partitions}_{ratio}_reverse_indices_{i}.pickle"
             persist_pickle(filename, obj)
-            end = timer()
-            prep_time_dump += end - start
-            clear_cache()
-            start = timer()
-            load_pickle(filename)
-            end = timer()
-            query_time_load += end - start
-
-        storage_size += os.stat(filename).st_size / 1024 / 1024
-    return prep_time_dump, query_time_load, storage_size
 
 
 def evaluate(std, answer, eps=1e-4):
