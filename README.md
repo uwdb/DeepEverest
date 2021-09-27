@@ -90,8 +90,9 @@ neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activatio
 # answer_query_with_guarantee() runs the Neural Threshold Algorithm.
 from DeepEverest import answer_query_with_guarantee  
 top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
-                                    model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_l_bnd, par_u_bnd, image_sample_id,
-                                    neuron_group, k_global, n_partitions, bits_per_image, BATCH_SIZE=batch_size, batch_size=batch_size)
+                                    model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
+                                    par_l_bnd, par_u_bnd, image_sample_id, neuron_group, k_global,
+                                    n_partitions, bits_per_image, BATCH_SIZE=batch_size, batch_size=batch_size)
 ```
 
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
