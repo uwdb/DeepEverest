@@ -77,7 +77,16 @@ from NeuronGroup import *
 image_sample_id = 659
 neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activations_neurons[:3])
 
+# Query for the k-nearest neighbors in the dataset using the activations of this group of neurons based on the proximity in the latent space defined by this group of neurons.
+top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
+                                                        model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
+                                                        par_low_bound, par_upp_bound, image_sample_id,
+                                                        neuron_group, k_global, n_partitions, bits_per_image,
+                                                        BATCH_SIZE=batch_size, batch_size=batch_size)
+top_k = sorted(top_k)
 ```
+
+The top-k results in `top_k`. Inspect them to investigate and understand what this group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 # Running the example notebook
 You can run `example.ipynb` to walk through the functionality that DeepEverest provides.
