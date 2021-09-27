@@ -62,6 +62,8 @@ rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_low_bound, par_upp_bound = c
 
 You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()`, or to interpret your DNN and dataset directly.
 
+### Interpret the functionality of any group of neurons.
+
 ```
 # Set the target input of interest and the number of top activations you want to inspect
 image_ids = [659]
