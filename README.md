@@ -24,6 +24,7 @@ You should be able to see a `build` folder in your current directory. One of the
 
 
 ### Construct the indexes
+Go back to the root directory of DeepEverest.
 `python 3`
 
 ```
