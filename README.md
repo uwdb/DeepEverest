@@ -6,7 +6,10 @@ Prototype implementation of DeepEverest, which is a system that supports efficie
 `git clone https://github.com/uwdb/DeepEverest.git` <br>
 `cd DeepEverest`
 
-## Install required packages
+## Repository
+Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and ``.
+
+## Installation of required packages
 The prototype is tested with Python 3.7. You can enter your virtual environment before this step.
 
 `pip install -r requirements.txt`
