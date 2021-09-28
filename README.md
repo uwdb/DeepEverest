@@ -6,7 +6,7 @@ A prototype implementation of DeepEverest, which is a system that supports effic
 Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
-`git clone git@github.com:uwdb/DeepEverest.git` or `git clone https://github.com/uwdb/DeepEverest.git` <br>
+`git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh doesn't work) <br>
 `cd DeepEverest`
 
 ## Installation of required packages
