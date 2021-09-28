@@ -6,7 +6,7 @@ A prototype implementation of DeepEverest, which is a system that supports effic
 Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
-`git clone https://github.com/uwdb/DeepEverest.git` <br>
+`git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh doesn't work) <br>
 `cd DeepEverest`
 
 ## Installation of required packages
@@ -77,7 +77,7 @@ k = 20
 
 # Get the top-k activations for this input in this layer and their corresponding neuron IDs.
 from utils import get_topk_activations_given_images
-topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, k_global)[0]
+topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, k)[0]
 topk_activations_neurons = [x[1] for x in topk_activations]
 
 # Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons.
@@ -91,7 +91,7 @@ neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activatio
 from DeepEverest import answer_query_with_guarantee  
 top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                     model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
-                                    par_l_bnd, par_u_bnd, image_sample_id, neuron_group, k_global,
+                                    par_l_bnd, par_u_bnd, image_sample_id, neuron_group, k,
                                     n_partitions, bits_per_image, BATCH_SIZE=batch_size, batch_size=batch_size)
 ```
 
