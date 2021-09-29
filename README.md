@@ -95,6 +95,15 @@ top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                     model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
                                     par_l_bnd, par_u_bnd, image_sample_id, neuron_group, k,
                                     n_partitions, bits_per_image, BATCH_SIZE=batch_size, batch_size=batch_size)
+                                    
+
+# Sort the top-k results based on their negative distances to the target input
+top_k = sorted(top_k)
+
+# View the top-k results
+from utils import plot_mnist
+for neg_dist, image_id in top_k:
+    plot_mnist(x_test, label_test, image_id)
 ```
 
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
