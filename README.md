@@ -3,7 +3,7 @@
 A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. See project page https://db.cs.washington.edu/projects/deepeverest/ for more details. A paper for this project will appear in PVLDB Vol. 15 (coming soon!), and the preprint version of the paper is available at https://arxiv.org/abs/2104.02234. 
 
 ## Repository Overview
-Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
+Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN model and dataset used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
 Install [Git Large File Storage](https://git-lfs.github.com/) before cloning the repository, then,
@@ -109,4 +109,4 @@ for neg_dist, image_id in top_k:
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
-You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
+You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
