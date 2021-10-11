@@ -75,11 +75,11 @@ You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()
 ```
 # Set the target input of interest and the number of top activations you want to inspect.
 image_ids = [659]
-k = 20
+n_neurons = 5
 
 # Get the top-k activations for this input in this layer and their corresponding neuron IDs.
 from utils import get_topk_activations_given_images
-topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, k)[0]
+topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, n_neurons)[0]
 topk_activations_neurons = [x[1] for x in topk_activations]
 
 # Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons.
@@ -90,7 +90,8 @@ neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activatio
 # Query for the k-nearest neighbors in the dataset using the activations of this group of neurons
 # based on the proximity in the latent space defined by this group of neurons.
 # answer_query_with_guarantee() runs the Neural Threshold Algorithm.
-from DeepEverest import answer_query_with_guarantee  
+from DeepEverest import answer_query_with_guarantee
+k = 20
 top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                     model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
                                     par_l_bnd, par_u_bnd, image_sample_id, neuron_group, k,
