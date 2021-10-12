@@ -99,10 +99,10 @@ top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                     n_partitions, bits_per_image, BATCH_SIZE=batch_size, batch_size=batch_size)
                                     
 
-# Sort the top-k results based on their negative distances to the target input
+# Sort the top-k results based on their negative distances to the target input.
 top_k = sorted(top_k)
 
-# View the top-k results
+# Visualize the top-k results.
 from utils import plot_mnist
 for neg_dist, image_id in top_k:
     plot_mnist(x_test, label_test, image_id)
