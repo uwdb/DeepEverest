@@ -74,6 +74,7 @@ You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()
 
 ```
 # Set the target input of interest and the number of top activations you want to inspect.
+# For example, image 659 is a misclassified example in the dataset.
 image_ids = [659]
 n_neurons = 5
 
