@@ -84,7 +84,7 @@ topk_activations_neurons = [x[1] for x in topk_activations]
 
 # Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons.
 from NeuronGroup import *
-image_sample_id = 659
+image_sample_id = image_ids[0]
 neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activations_neurons[:3])
 
 # Query for the k-nearest neighbors in the dataset using the activations of this group of neurons
