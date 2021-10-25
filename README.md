@@ -137,6 +137,7 @@ class CustomModel(BaseModel):
 In your main script, load your own raw model and wrap it in `CustomModel` so that DeepEverest can work.
 
 ```
+from tensorflow.keras.models import load_model
 from models.CustomModel import CustomModel
 
 raw_model = load_model('raw_model.h5')
