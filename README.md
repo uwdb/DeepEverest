@@ -32,7 +32,6 @@ Go to the root directory of DeepEverest.
 
 ```
 # Load the built library.
-
 import ctypes
 
 lib_file = <the path of the .so file that you just built>
@@ -40,12 +39,14 @@ index_lib = ctypes.CDLL(lib_file)
 
 # Load the model and dataset that you want to interpret. Note that you can load your own model and dataset.
 from utils import load_mnist_vgg_dataset_model
+
 x_train, y_train, x_test, y_test, model = load_mnist_vgg_dataset_model()
 all_layer_names = [layer.name for layer in model.model.layers]
 dataset = x_test
 
 # Set the layer of interest and get its activations by running DNN inference.
 from utils import get_layer_result_by_layer_id
+
 layer_name = "activation_12"
 layer_id = all_layer_names.index(layer_name)
 batch_size = 64
@@ -60,6 +61,7 @@ bits_per_image = math.ceil(math.log(n_partitions, 2))
 
 # Construct the indexes.
 from DeepEverest import construct_index
+
 rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_l_bnd, par_u_bnd = construct_index(
                                                                         index_lib=index_lib,
                                                                         n_images=n_images,
@@ -77,19 +79,16 @@ You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()
 ```
 # Set the target input of interest and the number of top activations you want to inspect.
 # For example, image 659 is a misclassified example in the dataset.
-
 image_ids = [659]
 n_neurons = 5
 
 # Get the top-k activations for this input in this layer and their corresponding neuron IDs.
-
 from utils import get_topk_activations_given_images
 
 topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, n_neurons)[0]
 topk_activations_neurons = [x[1] for x in topk_activations]
 
 # Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons.
-
 from NeuronGroup import *
 
 image_sample_id = image_ids[0]
@@ -98,7 +97,6 @@ neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activatio
 # Query for the k-nearest neighbors in the dataset using the activations of this group of neurons
 # based on the proximity in the latent space defined by this group of neurons.
 # answer_query_with_guarantee() runs the Neural Threshold Algorithm.
-
 from DeepEverest import answer_query_with_guarantee
 
 k = 20
@@ -113,6 +111,7 @@ top_k = sorted(top_k)
 
 # Visualize the top-k results.
 from utils import plot_mnist
+
 for neg_dist, image_id in top_k:
     plot_mnist(x_test, label_test, image_id)
 ```
@@ -127,7 +126,6 @@ To apply DeepEverest on your own raw model (currently supporting `tf.keras` mode
 
 ```
 from models.BaseModel import BaseModel
-
 
 class CustomModel(BaseModel):
     def __init__(self, model):
