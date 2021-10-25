@@ -32,7 +32,9 @@ Go to the root directory of DeepEverest.
 
 ```
 # Load the built library.
+
 import ctypes
+
 lib_file = <the path of the .so file that you just built>
 index_lib = ctypes.CDLL(lib_file)
 
@@ -75,23 +77,30 @@ You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()
 ```
 # Set the target input of interest and the number of top activations you want to inspect.
 # For example, image 659 is a misclassified example in the dataset.
+
 image_ids = [659]
 n_neurons = 5
 
 # Get the top-k activations for this input in this layer and their corresponding neuron IDs.
+
 from utils import get_topk_activations_given_images
+
 topk_activations = get_topk_activations_given_images(model, dataset, image_ids, layer_name, n_neurons)[0]
 topk_activations_neurons = [x[1] for x in topk_activations]
 
 # Construct the group of neurons that you are interested in, e.g., the top-3 maximally activated neurons.
+
 from NeuronGroup import *
+
 image_sample_id = image_ids[0]
 neuron_group = NeuronGroup(model.model, layer_id, neuron_idx_list=topk_activations_neurons[:3])
 
 # Query for the k-nearest neighbors in the dataset using the activations of this group of neurons
 # based on the proximity in the latent space defined by this group of neurons.
 # answer_query_with_guarantee() runs the Neural Threshold Algorithm.
+
 from DeepEverest import answer_query_with_guarantee
+
 k = 20
 top_k, exit_msg, _, n_images_run = answer_query_with_guarantee(
                                     model, dataset, rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx,
@@ -114,7 +123,7 @@ The top-k results in `top_k`. Inspect them to investigate and understand the gro
 You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
 
 ## Working with your own model
-To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/` because DeepEverest relies on methods of 'BaseModel'. For example, create `CustomModel.py` in `models/`,
+To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/` because DeepEverest relies on methods of `BaseModel`. For example, create a file `CustomModel.py` in `models/`,
 
 ```
 from models.BaseModel import BaseModel
@@ -131,6 +140,7 @@ In your main script, load your own raw model and wrap it in `CustomModel` so tha
 
 ```
 from models.CustomModel import CustomModel
+
 raw_model = load_model('raw_model.h5')
 model = CustomModel(raw_model)
 ```
