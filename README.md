@@ -114,7 +114,7 @@ The top-k results in `top_k`. Inspect them to investigate and understand the gro
 You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
 
 ## Working with your own model
-To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/`. For example, create `CustomModel.py` in `models/`,
+To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/` because DeepEverest relies on methods of 'BaseModel'. For example, create `CustomModel.py` in `models/`,
 
 ```
 from models.BaseModel import BaseModel
@@ -126,3 +126,13 @@ class CustomModel(BaseModel):
     def preprocess_input_for_inference(self, x):
         return x
 ```
+
+In your main script, load your own raw model and wrap it in `CustomModel` so that DeepEverest can work.
+
+```
+from models.CustomModel import CustomModel
+raw_model = load_model('raw_model.h5')
+model = CustomModel(raw_model)
+```
+
+Now you can use DeepEverest with `model`.
