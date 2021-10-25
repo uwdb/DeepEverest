@@ -140,7 +140,7 @@ In your main script, load your own raw model and wrap it in `CustomModel` so tha
 from tensorflow.keras.models import load_model
 from models.CustomModel import CustomModel
 
-raw_model = load_model('raw_model.h5')
+raw_model = load_model('your_own_model.h5')
 model = CustomModel(raw_model)
 ```
 
