@@ -8,7 +8,7 @@ Implementations of core functionalities of DeepEverest are in `DeepEverest.py` a
 ## Cloning
 Install [Git Large File Storage](https://git-lfs.github.com/) before cloning the repository, then,
 
-`git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh doesn't work) <br>
+`git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh does not work) <br>
 
 ## Installation of required packages
 The prototype is tested with Python 3.7. You can enter your virtual environment before this step.
