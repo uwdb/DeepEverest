@@ -168,9 +168,7 @@ Proc. VLDB Endow. 15(1): 98-111 (2021) [[PDF]](https://doi.org/10.14778/3485450.
   pages     = {98--111},
   year      = {2021},
   url       = {http://www.vldb.org/pvldb/vol15/p98-he.pdf},
-  timestamp = {Tue, 11 Jan 2022 18:01:10 +0100},
-  biburl    = {https://dblp.org/rec/journals/pvldb/HeDCB21.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+  biburl    = {https://dblp.org/rec/journals/pvldb/HeDCB21.bib}
 }
 ```
 
