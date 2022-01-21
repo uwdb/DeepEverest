@@ -144,4 +144,35 @@ raw_model = load_model('your_own_model.h5')
 model = CustomModel(raw_model)
 ```
 
-Now you can use DeepEverest with `model`.
+Yay, now you can use DeepEverest with `model`.
+
+## Citations & Paper
+
+If you use DeepEverest, please cite our PVLDB Vol. 15 paper:
+
+_DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural Network Interpretation_<br />
+Dong He, Maureen Daum, Walter Cai, Magdalena Balazinska<br />
+Proc. VLDB Endow. 15(1): 98-111 (2021) [[PDF]](https://doi.org/10.14778/3485450.3485460)
+
+```
+@article{DBLP:journals/pvldb/HeDCB21,
+  author    = {Dong He and
+               Maureen Daum and
+               Walter Cai and
+               Magdalena Balazinska},
+  title     = {DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural
+               Network Interpretation},
+  journal   = {Proc. {VLDB} Endow.},
+  volume    = {15},
+  number    = {1},
+  pages     = {98--111},
+  year      = {2021},
+  url       = {http://www.vldb.org/pvldb/vol15/p98-he.pdf},
+  timestamp = {Tue, 11 Jan 2022 18:01:10 +0100},
+  biburl    = {https://dblp.org/rec/journals/pvldb/HeDCB21.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
+
+See the [project website](https://db.cs.washington.edu/projects/deepeverest/) for more details about DeepEverest.
+
