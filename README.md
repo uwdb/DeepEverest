@@ -148,7 +148,7 @@ Yay, now you can use DeepEverest with `model`.
 
 ## Citations & Paper
 
-If you use DeepEverest, please cite our PVLDB Vol. 15 paper:
+If you find DeepEverest useful, please cite our paper:
 
 _DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural Network Interpretation_<br />
 Dong He, Maureen Daum, Walter Cai, Magdalena Balazinska<br />
