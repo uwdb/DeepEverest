@@ -2,10 +2,10 @@
 
 A prototype implementation of DeepEverest, which is a system that supports efficient DNN *interpretation by example* queries. DeepEverest focuses on accelerating two representative interpretation by example queries: "find the top-k inputs in the dataset that produce the highest activation value(s) for an individual neuron or a group of neurons specified by the user", and "for any input, find the k-nearest neighbors in the dataset using the activation values of a group of neurons based on the proximity in the latent space defined by the group of neurons specified by the user". We provide instructions on how you can apply DeepEverest with your own models and datasets below.
 
-See [project website](https://db.cs.washington.edu/projects/deepeverest/) for more details. A [paper](http://vldb.org/pvldb/vol15/p98-he.pdf) for this project is published in PVLDB Vol. 15, [doi:10.14778/3485450.3485460](https://doi.org/10.14778/3485450.3485460). An [extended technical report](https://arxiv.org/abs/2104.02234) is also available. 
+See [project website](https://db.cs.washington.edu/projects/deepeverest/) for more details. A [paper](http://vldb.org/pvldb/vol15/p98-he.pdf) for this project is published in PVLDB Vol. 15, [doi:10.14778/3485450.3485460](https://doi.org/10.14778/3485450.3485460). An [extended technical report](https://arxiv.org/abs/2104.02234) is also available.
 
 ## Repository Overview
-Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN models and datasets used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
+An example notebook is `example.ipynb`. Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN models and datasets used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
 Install [Git Large File Storage](https://git-lfs.github.com/) before cloning the repository, then,
@@ -76,7 +76,7 @@ rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_l_bnd, par_u_bnd = construct
 
 You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()` to accelerate future interpretation for this layer, or to interpret your DNN and dataset directly.
 
-### Interpret the functionality of any group of neurons using DeepEverest's Neural Threshold Algorithm (NTA)
+### Interpret the functionalities of any group of neurons using DeepEverest's Neural Threshold Algorithm (NTA)
 
 ```
 # Set the target input of interest and the number of top activations you want to inspect.
@@ -121,7 +121,7 @@ for neg_dist, image_id in top_k:
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
-You can run `example.ipynb` to walk through the functionality that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
+You can run `example.ipynb` to walk through the functionalities that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
 
 ## Working with your own model
 To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/` because DeepEverest relies on methods of `BaseModel`. For example, create a file `CustomModel.py` in `models/`,
