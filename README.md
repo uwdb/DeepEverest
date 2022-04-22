@@ -8,7 +8,7 @@ See [project website](https://db.cs.washington.edu/projects/deepeverest/) for mo
 An example notebook is `example.ipynb`. Implementations of core functionalities of DeepEverest are in `DeepEverest.py` and `index/deepeverst_index.cpp`. The DNN models and datasets used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
-**Install [Git Large File Storage](https://git-lfs.github.com/)** before cloning the repository, then,
+**Install [Git Large File Storage](https://git-lfs.github.com/) before cloning** the repository, then,
 
 `git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh does not work) <br>
 
