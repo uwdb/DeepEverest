@@ -215,6 +215,16 @@ def load_mnist_vgg_dataset_model():
     return x_train, y_train, x_test, y_test, model
 
 
+def load_mnist_vgg_dataset_model_torch():
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train = x_train.reshape(-1, 28, 28, 1)
+    x_test = x_test.reshape(-1, 28, 28, 1)
+    y_train = utils.to_categorical(y_train)
+    y_test = utils.to_categorical(y_test)
+
+
+
+
 def equal_tuple(a, x, eps=1e-4):
     for i, j in zip(a, x):
         if abs(i - j) > eps:
