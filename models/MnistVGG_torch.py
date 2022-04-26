@@ -4,12 +4,11 @@ from torch import nn
 
 from torch.nn import (Input, Conv2D, BatchNormalization, ZeroPadding2D,
                           MaxPooling2D, Activation, Dense, Dropout, Flatten)
-from tensorflow.keras.models import Model
 
-from models.BaseModel import BaseModel
+from models.BaseModel_torch import BaseModel
 
 
-class MnistVGG(BaseModel):
+class MnistVGG_torch(BaseModel):
     """
     1. ZeroPadding2D (2, 2)
     2. (3X3 Conv2D 64) X 2 + maxpool
@@ -22,8 +21,7 @@ class MnistVGG(BaseModel):
     """
 
     def __init__(self, train=False):
-        optimizer = optimizers.SGD(lr=0.01, momentum=0.9, decay=1e-04)
-        BaseModel.__init__(self, model=self._build(), optimizer=optimizer)
+        BaseModel.__init__(self, model=self._build())
         if not train:
             self.model.load_weights('./models/mnistvgg.h5')
 
@@ -37,6 +35,7 @@ class MnistVGG(BaseModel):
         Returns:
             MnistVGG model
         """
+        model = torch.model
 
         x = Input(shape=(28, 28, 1))
         y = ZeroPadding2D(padding=(2, 2))(x)  # matching the image size of CIFAR-10

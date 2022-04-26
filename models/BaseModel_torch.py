@@ -37,21 +37,21 @@ class BaseModelTorch(object):
     #     self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     # not changed
-    def fit(self, training_data, validation_data, epochs, batch_size):
-        x_train, y_train = training_data
-        x_val, y_val = validation_data
+    # def fit(self, training_data, validation_data, epochs, batch_size):
+    #     x_train, y_train = training_data
+    #     x_val, y_val = validation_data
 
-        hist = self.model.fit(x_train, y_train, epochs=epochs,
-                              batch_size=batch_size,
-                              validation_data=(x_val, y_val), callbacks=self.callbacks)
-        return hist
+    #     hist = self.model.fit(x_train, y_train, epochs=epochs,
+    #                           batch_size=batch_size,
+    #                           validation_data=(x_val, y_val), callbacks=self.callbacks)
+    #     return hist
 
     # not changed
-    def evaluate(self, eval_data, batch_size=32):
-        x, y = eval_data
-        loss_and_metrics = self.model.evaluate(x, y,
-                                               batch_size=batch_size)
-        return loss_and_metrics
+    # def evaluate(self, eval_data, batch_size=32):
+    #     x, y = eval_data
+    #     loss_and_metrics = self.model.evaluate(x, y,
+    #                                            batch_size=batch_size)
+    #     return loss_and_metrics
 
     def predict(self, x, normalize=False, batch_size=500):
         if not isinstance(x, np.ndarray):
@@ -59,7 +59,6 @@ class BaseModelTorch(object):
         if normalize:
             x = self.preprocess_input_for_inference(x)
         return self.model(x)
-
 
 
     def get_layer_result_by_layer_id(self, x, layer_id, normalize=False):
