@@ -9,6 +9,8 @@ from timeit import default_timer as timer
 from tensorflow import keras
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+from models.Mnist_torch import Mnist_torch
 from tensorflow.keras.datasets import cifar10, mnist
 from tensorflow.keras import utils
 
@@ -217,12 +219,13 @@ def load_mnist_vgg_dataset_model():
 
 def load_mnist_vgg_dataset_model_torch():
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    x_train = x_train.reshape(-1, 28, 28, 1)
-    x_test = x_test.reshape(-1, 28, 28, 1)
+    x_train = x_train.reshape(-1, 1, 28, 28)
+    x_test = x_test.reshape(-1, 1, 28, 28)
     y_train = utils.to_categorical(y_train)
     y_test = utils.to_categorical(y_test)
 
-
+    model = Mnist_torch()
+    return x_train, x_test, y_train, y_test, model
 
 
 def equal_tuple(a, x, eps=1e-4):
@@ -329,6 +332,7 @@ def get_layer_result_by_layer_name(model, x, layer_name, batch_size=None):
     return res
 
 
+# batch_size not supported yet, should put all the data in one single array
 def get_layer_result_by_layer_id(model, x, layer_id, batch_size=None):
     if batch_size is None:
         res = model.get_layer_result_by_layer_id(x, layer_id)
@@ -349,6 +353,28 @@ def get_layer_result_by_layer_id(model, x, layer_id, batch_size=None):
         res = np.concatenate(r, axis=0)
 
     return res
+
+
+# def get_layer_result_by_layer_id_torch(model, x, layer_id, batch_size=None):
+#     if batch_size is None:
+#         res = model.get_layer_result_by_layer_id(x, layer_id)
+#     else:
+#         r = list()
+#         n = len(x)
+#         for i in range(n // batch_size + 1):
+#             if (i + 1) * batch_size >= n:
+#                 layer_res = model.get_layer_result_by_layer_id(x[i * batch_size: n], layer_id)
+#             else:
+#                 layer_res = model.get_layer_result_by_layer_id(x[i * batch_size: (i + 1) * batch_size], layer_id)
+
+#             r.append(layer_res)
+
+#             if (i + 1) * batch_size >= n:
+#                 break
+
+#         res = np.concatenate(r, axis=0)
+
+#     return res
 
 
 def get_layer_results_by_layer_names(model, x, layer_names, batch_size=None):

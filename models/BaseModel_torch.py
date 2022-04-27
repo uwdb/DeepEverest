@@ -1,34 +1,34 @@
 from abc import ABCMeta, abstractmethod
 from doctest import OutputChecker
+from matplotlib.pyplot import get
 
 import numpy as np
-import tensorflow
-from tensorflow.keras import backend as K
 import torch
 import torch.nn as nn
 
 
-class BaseModelTorch(object):
+class BaseModel_torch(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, model: nn.Module, optimizer, loss=nn.CrossEntropyLoss):
+    def __init__(self, model):
         self.model = model
-        self.optimizer = optimizer
-        self.loss = loss
 
         self.model_dict = dict(model.named_modules())
-
+        self.name_list = []
         self.get_layer_outputs = {}
-        def get_activation(self, name):
-            def hook(self, model, input, output):
+        def get_activation(name):
+            def hook(model, input, output):
                 self.get_layer_outputs[name] = output.detach()
             return hook
         for name, module in model.named_modules():
+            self.name_list.append(name)
             self.get_layer_outputs[name] = module.register_forward_hook(get_activation(name))
             
     
     def load_weights(self, path):
-        self.model.load_state_dict(path)
+        self.model.load_state_dict(torch.load(path))
+        self.model.eval()
+
 
     def save(self, path):
         torch.save(self.model.state_dict(), path)
@@ -54,29 +54,26 @@ class BaseModelTorch(object):
     #     return loss_and_metrics
 
     def predict(self, x, normalize=False, batch_size=500):
-        if not isinstance(x, np.ndarray):
-            x = np.asarray(x)
+        # if not torch.is_tensor(x):
+        #     x = torch.tensor(x)
         if normalize:
             x = self.preprocess_input_for_inference(x)
         return self.model(x)
 
 
     def get_layer_result_by_layer_id(self, x, layer_id, normalize=False):
-        if not isinstance(x, np.ndarray):
-            x = np.asarray(x)
+        # if not torch.is_tensor(x):
+        #     x = torch.tensor(x)
         if normalize:
             x = self.preprocess_input_for_inference(x)
+        layer_name = self.name_list[layer_id]
         output = self.model(x)
-        self.model.named_modules()[layer_id](0)
+        return self.get_layer_outputs[layer_name]
 
-        
-        get_layer_output = self.get_layer_outputs[layer_id]
-        res = get_layer_output(x)[0]
-        return res
 
     def get_layer_result_by_layer_name(self, x, layer_name, normalize=False):
-        if not isinstance(x, np.ndarray):
-            x = np.asarray(x)
+        # if not torch.is_tensor(x):
+        #     x = torch.tensor(x)
         if normalize:
             x = self.preprocess_input_for_inference(x)
         output = self.model(x)
@@ -88,8 +85,8 @@ class BaseModelTorch(object):
         #res = get_layer_output(x)[0]
 
     def get_layer_results_by_layer_names(self, x, layer_names, normalize=False):
-        if not isinstance(x, np.ndarray):
-            x = np.asarray(x)
+        # if not torch.is_tensor(x):
+        #     x = torch.tensor(x)
         if normalize:
             x = self.preprocess_input_for_inference(x)
         output = self.model(x)
