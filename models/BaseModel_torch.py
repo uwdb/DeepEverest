@@ -80,10 +80,6 @@ class BaseModel_torch(object):
         return self.get_layer_outputs[layer_name]
 
 
-        #layer_id = [layer.name for layer in self.model.layers].index(layer_name)
-        #get_layer_output = self.get_layer_outputs[layer_id]
-        #res = get_layer_output(x)[0]
-
     def get_layer_results_by_layer_names(self, x, layer_names, normalize=False):
         # if not torch.is_tensor(x):
         #     x = torch.tensor(x)
@@ -95,11 +91,6 @@ class BaseModel_torch(object):
             result.append(self.get_layer_outputs[name])
         return result
 
-        
-        # get_layer_output = K.function([self.model.layers[0].input],
-        #                               [self.model.get_layer(layer_name).output for layer_name in layer_names])
-        # res = get_layer_output(x)
-        # return res
 
     @abstractmethod
     def preprocess_input_for_inference(self, x):

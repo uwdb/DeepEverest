@@ -3,7 +3,7 @@ import heapq
 
 import numpy as np
 
-from utils import l2_dist, get_group_activations_from_layer, binary_search, \
+from utils_torch import l2_dist, get_group_activations_from_layer, binary_search, \
     get_layer_result_for_image_batch, get_partition_id_by_image_id, get_image_ids_by_partition_id, \
     _get_double_pointers
 
