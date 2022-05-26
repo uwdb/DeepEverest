@@ -68,7 +68,15 @@ class BaseModel_torch(object):
             x = self.preprocess_input_for_inference(x)
         layer_name = self.name_list[layer_id]
         output = self.model(x)
-        return self.get_layer_outputs[layer_name]
+        result = self.get_layer_outputs[layer_name]
+        # shape = result.shape
+        # if len(shape) > 2:
+        #     shape_new = (shape[0], shape[2], shape[3], shape[1])
+        #     newResult = torch.zeros(shape_new)
+        #     for i in range(shape[1]):
+        #         newResult[:, :, :, i] = result[:, i, :, :]
+        #     return newResult
+        return result
 
 
     def get_layer_result_by_layer_name(self, x, layer_name, normalize=False):
@@ -77,7 +85,16 @@ class BaseModel_torch(object):
         if normalize:
             x = self.preprocess_input_for_inference(x)
         output = self.model(x)
-        return self.get_layer_outputs[layer_name]
+        result = self.get_layer_outputs[layer_name]
+        # shape = result.shape
+        # if len(shape) > 2:
+        #     shape_new = (shape[0], shape[2], shape[3], shape[1])
+        #     newResult = torch.zeros(shape_new)
+        #     for i in range(shape[1]):
+        #         newResult[:, :, :, i] = result[:, i, :, :]
+        #     return newResult
+        return result
+
 
 
     def get_layer_results_by_layer_names(self, x, layer_names, normalize=False):
