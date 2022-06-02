@@ -69,6 +69,8 @@ class BaseModel_torch(object):
         layer_name = self.name_list[layer_id]
         output = self.model(x)
         result = self.get_layer_outputs[layer_name]
+
+        # test of the shape of the output is changed to channel_last
         # shape = result.shape
         # if len(shape) > 2:
         #     shape_new = (shape[0], shape[2], shape[3], shape[1])
@@ -86,6 +88,8 @@ class BaseModel_torch(object):
             x = self.preprocess_input_for_inference(x)
         output = self.model(x)
         result = self.get_layer_outputs[layer_name]
+        
+        # test of the shape of the output is changed to channel_last
         # shape = result.shape
         # if len(shape) > 2:
         #     shape_new = (shape[0], shape[2], shape[3], shape[1])
