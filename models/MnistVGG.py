@@ -21,7 +21,7 @@ class MnistVGG(BaseModel):
 
     def __init__(self, train=False):
         optimizer = optimizers.SGD(lr=0.01, momentum=0.9, decay=1e-04)
-        BaseModel.__init__(self, model=self._build(), optimizer=optimizer)
+        BaseModel.__init__(self, model=self._build(), is_torch=False, optimizer=optimizer)
         if not train:
             self.model.load_weights('./models/mnistvgg.h5')
 
