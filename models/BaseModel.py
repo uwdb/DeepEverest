@@ -5,9 +5,12 @@ from tensorflow.keras import backend as K
 import torch
 import torch.nn as nn
 
+import torch
+import torch.nn as nn
 
 class BaseModel(object):
     __metaclass__ = ABCMeta
+
 
 
     def __init__(self, model, is_torch, optimizer=None):
@@ -15,6 +18,7 @@ class BaseModel(object):
 
         if self.is_torch:
             self.model = model
+
 
             self.model_dict = dict(model.named_modules())
             self.name_list = []
@@ -39,8 +43,10 @@ class BaseModel(object):
             self.model.load_state_dict(torch.load(path))
             self.model.eval()
 
+
         else:
             self.model.load_weights(path)
+
 
 
     def save(self, path):
@@ -71,6 +77,7 @@ class BaseModel(object):
         return loss_and_metrics
 
 
+
     def predict(self, x, normalize=True, batch_size=500):
         if self.is_torch:
             return self.model(x)
@@ -82,13 +89,15 @@ class BaseModel(object):
             return self.model.predict(x, batch_size)
 
 
+
     def get_layer_result_by_layer_id(self, x, layer_id, normalize=True):
         if self.is_torch:
+
             layer_name = self.name_list[layer_id]
             output = self.model(x)
             result = self.get_layer_outputs[layer_name]
             return result
-        
+
         else:
             if not isinstance(x, np.ndarray):
                 x = np.asarray(x)
@@ -99,11 +108,13 @@ class BaseModel(object):
             return res
 
 
+
     def get_layer_result_by_layer_name(self, x, layer_name, normalize=True):
         if self.is_torch:
             output = self.model(x)
             result = self.get_layer_outputs[layer_name]
             return result
+
 
         else:
             if not isinstance(x, np.ndarray):
@@ -116,8 +127,10 @@ class BaseModel(object):
             return res
 
 
+
     def get_layer_results_by_layer_names(self, x, layer_names, normalize=True):
         if self.is_torch:
+
             output = self.model(x)
             result = []
             for name in layer_names:
