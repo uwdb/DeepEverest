@@ -1,15 +1,15 @@
 import numpy as np
 import torch.nn
 
-from models.BaseModel_torch import BaseModel_torch
+from models.BaseModel import BaseModel
 
 
-class Mnist_torch(BaseModel_torch):
+class Mnist_torch(BaseModel):
     # a simple model of mnist 
     # including conv, maxpool, relu, linear, and dropout.
 
     def __init__(self, model):
-        BaseModel_torch.__init__(self, model)
+        BaseModel.__init__(self, model, True)
 
     
     def preprocess_input_for_inference(self, x):
