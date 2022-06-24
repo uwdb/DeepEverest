@@ -148,6 +148,9 @@ model = CustomModel(raw_model)
 
 Yay, now you can use DeepEverest with `model`.
 
+## Updated: Support for Pytorch and TensorFlow model
+DeepEverest now support both Pytorch and TensorFlow model, the instruction of using can be seen from the example_api.ipynb notebook. Both model can be run from the new DeepEverestAPI class, which is a relatively integrated environment. They can also be run from the normal step by step way as shown in the example.ipynb and example_torch.ipynb notebooks. 
+
 ## Citations & Paper
 
 If you find DeepEverest useful, please cite our paper:

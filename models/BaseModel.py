@@ -12,14 +12,11 @@ class BaseModel(object):
     __metaclass__ = ABCMeta
 
 
-
     def __init__(self, model, is_torch, optimizer=None):
         self.is_torch = is_torch
 
         if self.is_torch:
             self.model = model
-
-
             self.model_dict = dict(model.named_modules())
             self.name_list = []
             self.get_layer_outputs = {}
@@ -38,15 +35,16 @@ class BaseModel(object):
                                     layer_id in range(len(self.model.layers))]
 
 
+    def get_model(self):
+        return self.model
+
+
     def load_weights(self, path):
         if self.is_torch:
             self.model.load_state_dict(torch.load(path))
             self.model.eval()
-
-
         else:
             self.model.load_weights(path)
-
 
 
     def save(self, path):
@@ -77,7 +75,6 @@ class BaseModel(object):
         return loss_and_metrics
 
 
-
     def predict(self, x, normalize=True, batch_size=500):
         if self.is_torch:
             return self.model(x)
@@ -87,7 +84,6 @@ class BaseModel(object):
             if normalize:
                 x = self.preprocess_input_for_inference(x)
             return self.model.predict(x, batch_size)
-
 
 
     def get_layer_result_by_layer_id(self, x, layer_id, normalize=True):
@@ -108,14 +104,11 @@ class BaseModel(object):
             return res
 
 
-
     def get_layer_result_by_layer_name(self, x, layer_name, normalize=True):
         if self.is_torch:
             output = self.model(x)
             result = self.get_layer_outputs[layer_name]
             return result
-
-
         else:
             if not isinstance(x, np.ndarray):
                 x = np.asarray(x)
@@ -127,16 +120,13 @@ class BaseModel(object):
             return res
 
 
-
     def get_layer_results_by_layer_names(self, x, layer_names, normalize=True):
         if self.is_torch:
-
             output = self.model(x)
             result = []
             for name in layer_names:
                 result.append(self.get_layer_outputs[name])
             return result
-
         else:
             if not isinstance(x, np.ndarray):
                 x = np.asarray(x)
