@@ -154,7 +154,7 @@ If you find DeepEverest useful, please cite our paper:
 
 _DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural Network Interpretation_<br />
 Dong He, Maureen Daum, Walter Cai, Magdalena Balazinska<br />
-Proc. VLDB Endow. 15(1): 98-111 (2021) [[PDF]](https://doi.org/10.14778/3485450.3485460)
+Proc. VLDB Endow. 15(1): 98-111 (2021) [[PDF](https://doi.org/10.14778/3485450.3485460)]
 
 ```
 @article{DBLP:journals/pvldb/HeDCB21,
