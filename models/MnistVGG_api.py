@@ -3,10 +3,10 @@ from tensorflow.keras.layers import (Input, Conv2D, BatchNormalization, ZeroPadd
                           MaxPooling2D, Activation, Dense, Dropout, Flatten)
 from tensorflow.keras.models import Model
 
-from DeepEverestAPI import DeepEverestAPI
+from DeepEverest import DeepEverest
 
 
-class MnistVGG(DeepEverestAPI):
+class MnistVGG(DeepEverest):
     """
     1. ZeroPadding2D (2, 2)
     2. (3X3 Conv2D 64) X 2 + maxpool
@@ -20,7 +20,7 @@ class MnistVGG(DeepEverestAPI):
 
     def __init__(self, lib_file, dataset, train=False):
         model=self._build()
-        DeepEverestAPI.__init__(self, model, False, lib_file, dataset, bs=64)
+        DeepEverest.__init__(self, model, False, lib_file, dataset, bs=64)
         if not train:
             self.model.load_weights('./models/mnistvgg.h5')
 
