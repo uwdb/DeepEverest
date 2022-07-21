@@ -20,7 +20,7 @@ class MnistVGG(DeepEverest):
 
     def __init__(self, lib_file, dataset, train=False):
         model=self._build()
-        DeepEverest.__init__(self, model, False, lib_file, dataset, bs=64)
+        DeepEverest.__init__(self, model, False, lib_file, dataset, batch_size=64)
         if not train:
             self.model.load_weights('./models/mnistvgg.h5')
 

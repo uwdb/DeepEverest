@@ -1,9 +1,9 @@
+from operator import is_
 import numpy as np
 import torch
 from models.BaseModel import BaseModel
 import ctypes
-import DeepEverest_tensorflow
-import DeepEverest_torch
+import helper
 import math
 import heapq
 import pickle
@@ -26,6 +26,7 @@ class DeepEverest(BaseModel):
 
     def __init__(self, model, is_torch, lib_file, dataset, n_partitions=64, batch_size=None, ratio=0.05):
         BaseModel.__init__(self, model, is_torch)
+        helper.is_torch = is_torch
         self.model = model
         self.lib_file = lib_file
         self.index_lib = ctypes.CDLL(lib_file)
@@ -40,15 +41,26 @@ class DeepEverest(BaseModel):
         self.ratio = ratio
         self.bits_per_image = math.ceil(math.log(n_partitions, 2))
         self.index_map = {}
+        self.current_index_layer_id = None
         
     
+    # return the current index layer id
+    def get_current_index_layer_id(self):
+        if self.current_index_layer_id is None:
+            print("No index constructed yet")
+            return None
+        else:
+            return self.current_index_layer_id
+    
+    
+    # return if the model is pytorch or not
     def is_torch(self):
         return self.is_torch
 
     
     # get the layer output of a layer, return an array of layers' names of each layer
     def get_layer_outputs(self):
-        return self.get_layer_outputs
+        return BaseModel.get_layer_outputs(self)
 
 
     # return an array of names of all the layers
@@ -63,15 +75,15 @@ class DeepEverest(BaseModel):
     # private method
     def __get_layer_result_by_layer_id(self, x, layer_id, batch_size=None):
         if batch_size is None:
-            res = self.get_layer_result_by_layer_id(x, layer_id)
+            res = BaseModel.get_layer_result_by_layer_id(self, x, layer_id)
         else:
             r = list()
             n = len(x)
             for i in range(n // batch_size + 1):
                 if (i + 1) * batch_size >= n:
-                    layer_res = self.get_layer_result_by_layer_id(x[i * batch_size: n], layer_id)
+                    layer_res = BaseModel.get_layer_result_by_layer_id(self, x[i * batch_size: n], layer_id)
                 else:
-                    layer_res = self.get_layer_result_by_layer_id(x[i * batch_size: (i + 1) * batch_size], layer_id)
+                    layer_res = BaseModel.get_layer_result_by_layer_id(self, x[i * batch_size: (i + 1) * batch_size], layer_id)
 
                 r.append(layer_res)
 
@@ -83,15 +95,16 @@ class DeepEverest(BaseModel):
         return res
 
 
-    # return the layer result of a specific layer by its id
-    def get_layer_result_by_layer_id(self, layer_id):
+    # return the layer results of a specific layer by its id
+    def get_layer_results_by_layer_id(self, layer_id):
         if self.is_torch:
-            return self.__get_layer_result_by_layer_id(self.dataset, layer_id, self.batch_size).detach().numpy()
+            return self.__get_layer_result_by_layer_id(self.dataset, layer_id, batch_size=self.batch_size).detach().numpy()
         else:
-            return self.__get_layer_result_by_layer_id(self.dataset, layer_id, self.batch_size)
+            return self.__get_layer_result_by_layer_id(self.dataset, layer_id, batch_size=self.batch_size)
 
 
     # construct index by layer id, must construct index before doing search if the index has not been constructed or need to search on a different layer_id
+    # if the input layer_id has never been constructed, this will construct the index. If the index has been constructed before, it will load the data from memory
     def construct_index(self, layer_id):
         if layer_id in self.index_map.keys():
             self.rev_act = self.index_map[layer_id][0]
@@ -102,27 +115,28 @@ class DeepEverest(BaseModel):
             self.par_upp_bound = self.index_map[layer_id][5]
         else:
             if self.is_torch:
-                self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound = DeepEverest_torch.construct_index(
+                self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound = helper.construct_index(
                     index_lib=self.index_lib,
                     n_images=self.n_images,
                     ratio=self.ratio,
                     n_partitions=self.n_partitions,
                     bits_per_image=self.bits_per_image,
-                    layer_result=self.get_layer_result_by_layer_id(layer_id)
+                    layer_result=self.get_layer_results_by_layer_id(layer_id)
                 )
                 pack = (self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound)
                 self.index_map[layer_id] = pack
             else:
-                self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound = DeepEverest_tensorflow.construct_index(
+                self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound = helper.construct_index(
                     index_lib=self.index_lib,
                     n_images=self.n_images,
                     ratio=self.ratio,
                     n_partitions=self.n_partitions,
                     bits_per_image=self.bits_per_image,
-                    layer_result=self.get_layer_result_by_layer_id(layer_id)
+                    layer_result=self.get_layer_results_by_layer_id(layer_id)
                 )
                 pack = (self.rev_act, self.rev_idx_act, self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, self.par_upp_bound)
                 self.index_map[layer_id] = pack
+        self.current_index_layer_id = layer_id
 
 
     # save constructed index_map to disk
@@ -180,7 +194,7 @@ class DeepEverest(BaseModel):
     # obtained the nearest k image samples of a certain image, from a specified neuron group 
     def answer_query_with_guarantee(self, image_sample_id, k, neuron_group):
         if self.is_torch:
-            top_k, exit_msg, is_in_partition_0, n_images_rerun = DeepEverest_torch.answer_query_with_guarantee(
+            top_k, exit_msg, is_in_partition_0, n_images_rerun = helper.answer_query_with_guarantee(
                                 self, self.dataset, self.rev_act, self.rev_idx_act, 
                                 self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, 
                                 self.par_upp_bound, image_sample_id, neuron_group, k, 
@@ -189,7 +203,7 @@ class DeepEverest(BaseModel):
             top_k = sorted(top_k)
             return top_k, exit_msg
         else:
-            top_k, exit_msg, is_in_partition_0, n_images_rerun = DeepEverest_tensorflow.answer_query_with_guarantee(
+            top_k, exit_msg, is_in_partition_0, n_images_rerun = helper.answer_query_with_guarantee(
                                 self, self.dataset, self.rev_act, self.rev_idx_act, 
                                 self.rev_bit_arr, self.rev_idx_idx, self.par_low_bound, 
                                 self.par_upp_bound, image_sample_id, neuron_group, k, 

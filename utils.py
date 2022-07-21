@@ -13,10 +13,6 @@ import torch
 from tensorflow.keras.datasets import cifar10, mnist
 from tensorflow.keras import utils
 
-# from models.Cifar10VGG import Cifar10VGG
-# from models.ImagenetResNet import ImagenetResNet50
-# from models.MnistVGG import MnistVGG
-
 
 def get_neuron_result(layer_result, neuron, input_id=0):
     dim_1 = neuron // (layer_result.shape[2] * layer_result.shape[3])
@@ -102,17 +98,6 @@ def update_max_norm_heap(cur_input_id, model, dataset, norm, heap, k, neuron_gro
             heapq.heapreplace(heap, (dist, real_id))
 
 
-# def initialize_data_model():
-#     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-#     x_train = x_train.astype('float32')
-#     x_test = x_test.astype('float32')
-#     y_train = keras.utils.to_categorical(y_train, 10)
-#     y_test = keras.utils.to_categorical(y_test, 10)
-#     model = Cifar10VGG(train=False)
-#     print(model.model.summary())
-#     return model, x_test
-
-
 def plot_cifar(X, y, idx):
     img = X[idx].reshape(32, 32, 3)
     plt.imshow(img, interpolation='nearest')
@@ -172,37 +157,6 @@ def l0_sparsity(x):
     x = np.nan_to_num(x, False)
     sparsity = 1.0 - (np.count_nonzero(x) / float(x.size))
     return sparsity
-
-
-# def load_imagenet_test_resnet_dataset_model():
-#     start = timer()
-#     x_test = np.load("/data/ilsvrc2012/ilsvrc2012_test.npy")
-#     end = timer()
-#     load_time = end - start
-#     model = ImagenetResNet50()
-#     return x_test, model, load_time
-
-
-# def load_imagenet_val_resnet_dataset_model():
-#     start = timer()
-#     x_val = np.load("/data/ilsvrc2012/ilsvrc2012_val_10000.npy")
-#     end = timer()
-#     load_time = end - start
-#     model = ImagenetResNet50()
-#     return x_val, model, load_time
-
-
-# def load_cifar10_vgg_dataset_model():
-#     start = timer()
-#     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-#     x_train = x_train.astype('float32')
-#     x_test = x_test.astype('float32')
-#     y_train = keras.utils.to_categorical(y_train, 10)
-#     y_test = keras.utils.to_categorical(y_test, 10)
-#     end = timer()
-#     load_time = end - start
-#     model = Cifar10VGG(train=False)
-#     return x_train, y_train, x_test, y_test, model, load_time
 
 
 def load_mnist_vgg_dataset_model():
@@ -447,6 +401,15 @@ def get_layer_result_for_image_batch(model, dataset, image_batch, layer_id, batc
     cur_input = []
     for input_id in image_batch:
         cur_input.append(dataset[input_id])
+    layer_result = get_layer_result_by_layer_id(model, cur_input, layer_id, batch_size)
+    return layer_result
+
+
+def get_layer_result_for_image_batch_torch(model, dataset, image_batch, layer_id, batch_size):
+    cur_input = []
+    for input_id in image_batch:
+        cur_input.append(dataset[input_id])
+    cur_input = torch.stack(cur_input)
     layer_result = get_layer_result_by_layer_id(model, cur_input, layer_id, batch_size)
     return layer_result
 
