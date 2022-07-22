@@ -42,15 +42,6 @@ class DeepEverest(BaseModel):
         self.bits_per_image = math.ceil(math.log(n_partitions, 2))
         self.index_map = {}
         self.current_index_layer_id = None
-        
-    
-    # return the current index layer id
-    def get_current_index_layer_id(self):
-        if self.current_index_layer_id is None:
-            print("No index constructed yet")
-            return None
-        else:
-            return self.current_index_layer_id
     
     
     # return if the model is pytorch or not
@@ -192,7 +183,8 @@ class DeepEverest(BaseModel):
 
 
     # obtained the nearest k image samples of a certain image, from a specified neuron group 
-    def answer_query_with_guarantee(self, image_sample_id, k, neuron_group):
+    def answer_query_with_guarantee(self, layer_id, image_sample_id, k, neuron_group):
+        self.construct_index(layer_id)
         if self.is_torch:
             top_k, exit_msg, is_in_partition_0, n_images_rerun = helper.answer_query_with_guarantee(
                                 self, self.dataset, self.rev_act, self.rev_idx_act, 

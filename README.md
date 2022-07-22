@@ -27,54 +27,35 @@ The prototype is tested with Python 3.7. You can enter your virtual environment 
 You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python versions) inside `build` will contain the built library. It is a `.so` file. The filename is also dependent on the system and python versions. For example, the relative path could look like `index/build/lib.macosx-10.7-x86_64-3.7/deepeverst_index.cpython-37m-darwin.so` if you build the library on a MacOS with an Intel CPU using Python 3.7.
 
 
-### Construct the indexes (NPI and MAI)
-Go to the root directory of DeepEverest.
+### Use the DeepEverest (NPI and MAI)
+Go to the root directory of DeepEverest. User could also refer to the `example_api.ipynb` to see how can it be used step by step.
 
-`python 3`
+User could use a package to load the pretrained model as well as the dataset to be queried on (Pytorch):
 
-```
-# Load the built library.
-import ctypes
+`model = Net()` <br>
+`model = DeepEverest(model, True, lib_file, dataset)`
 
-lib_file = <the path of the .so file that you just built>
-index_lib = ctypes.CDLL(lib_file)
+This is to load the model, and True for Pytorch, and False for tensorflow. lib_file is the path for the compiled c library, and dataset is the single dataset (torch tensor or numpy) for the query. 
 
-# Load the model and dataset that you want to interpret. Note that you can load your own model and dataset.
-from utils import load_mnist_vgg_dataset_model
+Pretrained parameter can be loaded into the model by this statement:
 
-x_train, y_train, x_test, y_test, model = load_mnist_vgg_dataset_model()
-all_layer_names = [layer.name for layer in model.model.layers]
-dataset = x_test
+`model.load_weights('mnist.pth')`
 
-# Set the layer of interest and get its activations by running DNN inference.
-from utils import get_layer_result_by_layer_id
+User could use the Deep Everest API for querying the top-k activations for a given image in a specific layer: 
 
-layer_name = "activation_12"
-layer_id = all_layer_names.index(layer_name)
-batch_size = 64
-layer_result = get_layer_result_by_layer_id(model, dataset, layer_id, batch_size=batch_size)
+`topk_activations = model.get_topk_activations_given_images([659], layer_name, 20)` <br>
+`print(topk_activations)`
 
-# Configure the parameters of the indexes to be built. Note that you can set your own configuration.
-n_images = len(dataset)
-n_partitions= 32
-ratio = 0.05
-import math
-bits_per_image = math.ceil(math.log(n_partitions, 2))
+And the user could use Deep Everest API for querying the closest images for a given image with respect to a neuron group:
 
-# Construct the indexes.
-from DeepEverest import construct_index
+`top_k, exit_msg = model.answer_query_with_guarantee(layer_id, image_sample_id, 20, neuron_group)` <br>
+`print(top_k)` <br>
+`print(exit_msg)`
 
-rev_act, rev_idx_act, rev_bit_arr, rev_idx_idx, par_l_bnd, par_u_bnd = construct_index(
-                                                                        index_lib=index_lib,
-                                                                        n_images=n_images,
-                                                                        ratio=ratio,
-                                                                        n_partitions=n_partitions,
-                                                                        bits_per_image=bits_per_image,
-                                                                        layer_result=layer_result)
+During the query, index will automatically constructed and persist in the memory, you can also store and load constructed indices to disk using the follow command:
 
-```
-
-You can choose to persist the indexes to disk with `np.save()` or `pickle.dump()` to accelerate future interpretation for this layer, or to interpret your DNN and dataset directly.
+`model.save_index_map("path")` <br>
+`model.load_index_map("saved_map")`
 
 ### Interpret the functionalities of any group of neurons using DeepEverest's Neural Threshold Algorithm (NTA)
 
@@ -121,7 +102,7 @@ for neg_dist, image_id in top_k:
 The top-k results in `top_k`. Inspect them to investigate and understand the group of neurons' functionality by tying that functionality to the input examples in the dataset.
 
 ## Running the example notebook
-You can run `example.ipynb` to walk through the functionalities that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
+You can run `example_api.ipynb` to walk through the functionalities that DeepEverest provides. `old-examples/` also contains a few more examples for an old version of DeepEverest with some other useful interpretation techniques adapted from other projects (e.g., pixel-level attribution), which probably only works with Tensorflow 1.x.
 
 ## Working with your own model <a name="ownmodel"></a>
 To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `BaseModel` in `models/` because DeepEverest relies on methods of `BaseModel`. For example, create a file `CustomModel.py` in `models/`,
