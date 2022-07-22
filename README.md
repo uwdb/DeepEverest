@@ -12,6 +12,12 @@ An example notebook is `example.ipynb`. Implementations of core functionalities 
 
 `git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh does not work) <br>
 
+**Clone model weights tracked by `git lfs`** by,
+
+`cd DeepEverest` <br>
+`git lfs install` <br>
+`git lfs pull`
+
 ## Installation of required packages
 The prototype is tested with Python 3.7. You can enter your virtual environment before this step.
 
