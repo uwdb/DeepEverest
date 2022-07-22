@@ -12,7 +12,7 @@ An example notebook is `example.ipynb`. Implementations of core functionalities 
 
 `git clone git@github.com:uwdb/DeepEverest.git` (or `git clone https://github.com/uwdb/DeepEverest.git` when ssh does not work) <br>
 
-**Clone model weights tracked by `git lfs`** by,
+**Clone model weights** tracked by `git lfs` by,
 
 `cd DeepEverest` <br>
 `git lfs install` <br>
