@@ -21,7 +21,6 @@ An example notebook is `example.ipynb`. Implementations of core functionalities 
 ## Installation of required packages
 The prototype is tested with Python 3.7. You can enter your virtual environment before this step.
 
-`cd DeepEverest` <br>
 `pip install -r requirements.txt`
 
 ## Example usage
