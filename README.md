@@ -5,7 +5,7 @@ A prototype implementation of DeepEverest, which is a system that supports effic
 See [project website](https://db.cs.washington.edu/projects/deepeverest/) for more details. A [paper](http://vldb.org/pvldb/vol15/p98-he.pdf) for this project is published in PVLDB Vol. 15, [doi:10.14778/3485450.3485460](https://doi.org/10.14778/3485450.3485460). An [extended technical report](https://arxiv.org/abs/2104.02234) is also available.
 
 ## Repository Overview
-An example notebook using the DeepEverest is `example_api.ipynb`. The implementation will also Implementations of core functionalities of DeepEverest are in `helper.py` and `index/deepeverst_index.cpp`. The DNN models and datasets used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
+An example notebook using DeepEverest is `example_api.ipynb`, which includes the usage of this tool, as well as the comparison between its outputs and brute force outputs for demonstration purpose. The implementation will also Implementations of core functionalities of DeepEverest are in `helper.py` and `index/deepeverst_index.cpp`. The DNN models and datasets used in the paper are in `models/`. However, you can apply DeepEverest on your own model and dataset. `index/` contains the core source for the construction of the indexes used in the DeepEverest. `tools/` contains useful interpretation techniques adapted from other projects. `utils.py` contains frequently used functions.
 
 ## Cloning
 **Install [Git Large File Storage](https://git-lfs.github.com/) before cloning** the repository, then,
@@ -27,26 +27,26 @@ The prototype is tested with Python 3.7. You can enter your virtual environment 
 You should be able to see a `build` folder in your current directory. One of the directories (directory name depending on system and python versions) inside `build` will contain the built library. It is a `.so` file. The filename is also dependent on the system and python versions. For example, the relative path could look like `index/build/lib.macosx-10.7-x86_64-3.7/deepeverst_index.cpython-37m-darwin.so` if you build the library on a MacOS with an Intel CPU using Python 3.7.
 
 
-### Use the DeepEverest (PyTorch)
+### Use DeepEverest (PyTorch)
 Go to the root directory of DeepEverest. User could also refer to the `example_api.ipynb` to see how can it be used step by step.
 
-User could use a package to load the pretrained model as well as the dataset to be queried on (Pytorch):
+User could load a pre-trained model as well as the dataset to be queried on (Pytorch), and use them to construct DeepEverest:
 ```
 model = Net()
 model = DeepEverest(model, True, lib_file, dataset)
 ```
-This is to load the model, and True for Pytorch, and False for tensorflow. lib_file is the path for the compiled c library, and dataset is the single dataset (torch tensor or numpy) for the query. 
+This is to load the model, and True for Pytorch, and False for tensorflow. lib_file is the path for the compiled c library mentioned above, and dataset is the single dataset (torch tensor for PyTorch or Numpy for Tensorflow) for the query. 
 
-Pretrained parameter can be loaded into the model by this statement:
+Pre-trained parameter can be loaded into the model by this statement:
 ```
 model.load_weights('mnist.pth')
 ```
-User could use the Deep Everest API for querying the top-k (20) activations for a given image in a specific layer: 
+User could use DeepEverest API for querying the top-k (such as 20) activations for a given image in a specific layer: 
 ```
 topk_activations = model.get_topk_activations_given_images([659], layer_name, 20)
 print(topk_activations)
 ```
-And the user could use Deep Everest API for querying the closest images for a given image with respect to a neuron group:
+And the user could use DeepEverest API for querying the top-k (such as 20) images that are closest to a given image with respect to a neuron group (*Note: in this step, if the search is on a new layer that the index hasn't been constructed, it will take a bit longer to construct the index first before completing the search. If the index has been constructed, the search will take much less time*):
 ```
 top_k, exit_msg = model.answer_query_with_guarantee(layer_id, image_sample_id, 20, neuron_group)
 print(top_k)
@@ -65,7 +65,7 @@ neuron_list = [(1, 4, 4), (1, 4, 3), (1, 4, 5)]
 neuron_group = NeuronGroup(model.get_model(), layer_id, neuron_idx_list=neuron_list)
 ```
 
-### Use the DeepEverest (TensorFlow)
+### Use DeepEverest (TensorFlow)
 To apply DeepEverest on your own raw model (currently supporting `tf.keras` models), create a subclass of `DeepEverest` in `models/`. Refer to the file `MnistVGG_api.py` as an example or use the following template:
 ```
 from DeepEverest import DeepEverest
@@ -78,7 +78,7 @@ class CustomModel(DeepEverest):
 ```
 In your main script, load your own raw model and wrap it in `CustomModel` so that DeepEverest can work.
 
-Then the user can refer to the instruction of PyTorch for querying or `example_api.ipynb` notebook. Instructions will otherwise be the same. 
+Then the user can refer to the demonstration for querying in `example_api.ipynb` notebook. Instructions are similar for PyTorch model and TensorFlow model. 
 ```
 from tensorflow.keras.models import load_model
 from models.CustomModel import CustomModel
