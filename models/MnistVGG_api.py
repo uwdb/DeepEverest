@@ -1,13 +1,12 @@
 import numpy as np
-from tensorflow.keras import optimizers
 from tensorflow.keras.layers import (Input, Conv2D, BatchNormalization, ZeroPadding2D,
                           MaxPooling2D, Activation, Dense, Dropout, Flatten)
 from tensorflow.keras.models import Model
 
-from models.BaseModel import BaseModel
+from DeepEverest import DeepEverest
 
 
-class MnistVGG(BaseModel):
+class MnistVGG(DeepEverest):
     """
     1. ZeroPadding2D (2, 2)
     2. (3X3 Conv2D 64) X 2 + maxpool
@@ -19,11 +18,12 @@ class MnistVGG(BaseModel):
     8. FC 10 + Softmax
     """
 
-    def __init__(self, train=False):
-        optimizer = optimizers.SGD(lr=0.01, momentum=0.9, decay=1e-04)
-        BaseModel.__init__(self, model=self._build(), is_torch=False, optimizer=optimizer)
+    def __init__(self, lib_file, dataset, train=False):
+        model=self._build()
+        DeepEverest.__init__(self, model, False, lib_file, dataset, batch_size=64)
         if not train:
             self.model.load_weights('./models/mnistvgg.h5')
+
 
     @staticmethod
     def _build():

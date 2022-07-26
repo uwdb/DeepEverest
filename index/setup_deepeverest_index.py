@@ -2,6 +2,7 @@ from setuptools import setup, Extension
 from sys import platform
 
 # Compile *deepeverst_index.cpp* into a shared library
+print(platform)
 
 if platform == "linux" or platform == "linux2":
     # linux
