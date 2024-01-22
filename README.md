@@ -163,19 +163,13 @@ Proc. VLDB Endow. 15(1): 98-111 (2021) [[PDF](https://doi.org/10.14778/3485450.3
 
 ```
 @article{DBLP:journals/pvldb/HeDCB21,
-  author    = {Dong He and
-               Maureen Daum and
-               Walter Cai and
-               Magdalena Balazinska},
-  title     = {DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural
-               Network Interpretation},
+  author    = {Dong He and Maureen Daum and Walter Cai and Magdalena Balazinska},
+  title     = {DeepEverest: Accelerating Declarative Top-K Queries for Deep Neural Network Interpretation},
   journal   = {Proc. {VLDB} Endow.},
   volume    = {15},
   number    = {1},
   pages     = {98--111},
-  year      = {2021},
-  url       = {http://www.vldb.org/pvldb/vol15/p98-he.pdf},
-  biburl    = {https://dblp.org/rec/journals/pvldb/HeDCB21.bib}
+  year      = {2021}
 }
 ```
 
